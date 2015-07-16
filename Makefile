@@ -15,7 +15,7 @@ all:: deps/mmd
 
 clean-all:: clean-mmd
 
-mmd_repo = https://github.com/fletcher/MultiMarkdown-4.git
+mmd_repo = https://github.com/altenwald/MultiMarkdown-4.git
 
 deps/mmd:
 	git clone $(mmd_repo) deps/mmd
