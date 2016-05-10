@@ -16,7 +16,7 @@
 
 -behavior(lpad_data_loader).
 
--export([load_metadata/1, to_html/1, handle_data_spec/2]).
+-export([load_metadata/1, to_html/1, to_text/1, handle_data_spec/2]).
 
 %%%===================================================================
 %%% Load
@@ -62,6 +62,14 @@ to_html_impl({file, File}) ->
 to_html_impl({string, Str}) ->
     handle_mmd_result_html(redirect_mmd_cmd(Str, [])).
 
+to_text(Term) ->
+    to_text_impl(lpad_util:file_or_string(Term)).
+
+to_text_impl({file, File}) ->
+    handle_mmd_result_html(pandoc_cmd([File]));
+to_text_impl({string, Str}) ->
+    handle_mmd_result_html(redirect_pandoc_cmd(Str, ["-f", "markdown", "-t", "plain"])).
+
 handle_mmd_result_html({0, Out}) -> Out;
 handle_mmd_result_html({N, Err}) ->
     error({mdd_html, {N, Err}}).
@@ -78,6 +86,12 @@ mmd_exe() ->
       [fun local_mmd_exe/0,
        fun() -> os:getenv("LPAD_MMD_EXE") end,
        fun() -> os:find_executable("multimarkdown") end]).
+
+pandoc_cmd(Args) ->
+    ldap_cmd:run(pandoc_exe(), ["-f", "markdown", "-t", "plain"], Args).
+
+pandoc_exe() ->
+    "/usr/bin/pandoc". 
 
 local_mmd_exe() ->
     Path = local_mmd_path(),
@@ -102,6 +116,9 @@ handle_exe_find(Exe, _Rest) ->
 
 redirect_mmd_cmd(Out, Args) ->
     lpad_cmd:run(redirect_exe(), [iolist_to_binary(Out), mmd_exe()|Args]).
+
+redirect_pandoc_cmd(Out, Args) ->
+    lpad_cmd:run(redirect_exe(), [iolist_to_binary(Out), pandoc_exe()|Args]).
 
 redirect_exe() ->
     filename:join([lpad:app_dir(), "bin", "lpad-exec-redirect"]).

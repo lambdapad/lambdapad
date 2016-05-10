@@ -17,6 +17,7 @@
 -export([read_file/1, read_file/2,
          filename/1, basename/1,
          markdown_to_html/1,
+         markdown_to_text/1,
          render/1,
          sort/1, sortasc/1, sortdesc/1,
          sort/2, sortasc/2, sortdesc/2,
@@ -117,6 +118,13 @@ maybe_basename(Path) ->
 
 render(undefined) -> "";
 render(Context) -> lpad_template:render_string(Context, []).
+
+%%%-------------------------------------------------------------------
+%%% markdown_to_text
+%%%-------------------------------------------------------------------
+
+markdown_to_text(undefined) -> "";
+markdown_to_text(Context) -> lpad_markdown:to_text(Context).
 
 %%%-------------------------------------------------------------------
 %%% markdown_to_html
