@@ -63,6 +63,19 @@ to_html_impl({string, Str}) ->
     handle_mmd_result_html(redirect_mmd_cmd(Str, [])).
 
 to_text(Term) ->
+    <<I:128>> = crypto:hash(md5, Term),
+    Temp = lists:flatten(io_lib:format("/tmp/lambdapad_~32.16.0B", [I])),
+    case filelib:is_file(Temp) of
+        true ->
+            {ok, Text} = file:read_file(Temp),
+            binary_to_term(Text);
+        false ->
+            Output = to_text1(Term),
+            file:write_file(Temp, term_to_binary(Output)),
+            Output
+    end.
+
+to_text1(Term) ->
     to_text_impl(lpad_util:file_or_string(Term)).
 
 to_text_impl({file, File}) ->
