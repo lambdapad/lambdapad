@@ -104,7 +104,7 @@ pandoc_cmd(Args) ->
     ldap_cmd:run(pandoc_exe(), ["-f", "markdown", "-t", "plain"], Args).
 
 pandoc_exe() ->
-    "/usr/bin/pandoc". 
+    "/usr/local/bin/pandoc".
 
 local_mmd_exe() ->
     Path = local_mmd_path(),
