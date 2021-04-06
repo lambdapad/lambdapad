@@ -2,7 +2,7 @@ id     : why-erlang
 title  : Why Erlang?
 date   : 2014-08-08
 author : Stan The Martian
-blurb  : Why on Earth was Erlang chosen as the language for LambdaPad?
+excerpt: Why on Earth was Erlang chosen as the language for LambdaPad?
 
 Every site generator seems to be written in Ruby, Python, or Node.js these
 days. Screw that. We want something *functional*. We want something

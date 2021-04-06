@@ -9,11 +9,11 @@
       <p class="post-info">
         {{ post.date }} by {{ post.author }}
       </p>
-      {{ post|markdown_to_html }}
+      {{ post.content | safe }}
     </div>
     <div class="col-md-3">
       <h3>Recent Posts</h3>
-      {% include "recent-posts.html" %}
+      {% widget "recent posts" %}
     </div>
   </div>
 </div>

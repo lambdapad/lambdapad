@@ -1,0 +1,7 @@
+[blog]
+title = "My Life With LambdaPad"
+description = """
+  Tales of daily life using the amazing LambdaPad
+  for my every site generating need.
+  """
+url = "http://localhost:8080/"

@@ -10,7 +10,9 @@ defmodule Lambdapad.Html.Widget do
 
   def widget([name], config) do
     {"widgets", widgets} = List.keyfind(config, "widgets", 0)
-    {^name, content} = List.keyfind(widgets, name, 0)
-    content
+    case List.keyfind(widgets, name, 0) do
+      {^name, content} -> content
+      nil -> raise "widget #{inspect(name)} not found!"
+    end
   end
 end

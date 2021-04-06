@@ -7,11 +7,11 @@
 <div class="container">
   <div class="row">
     <div class="col-md-7">
-      {{ snippets|get:'about'|markdown_to_html }}
+      {{ about.content | safe }}
     </div>
     <div class="col-md-3">
       <h3 style="margin-top:0">Recent Posts</h3>
-      {% include "recent-posts.html" %}
+      {% widget "recent posts" %}
     </div>
   </div>
 </div>

@@ -3,6 +3,9 @@ defmodule Lambdapad.Cli do
 
   alias Lambdapad.{Config, Html}
 
+  defp absname("."), do: File.cwd!()
+  defp absname(dir), do: Path.absname(dir)
+
   def main(["--version"]) do
     project = Config.lambdapad_metainfo()["lambdapad"]
     IO.puts("#{project["name"]} v#{project["vsn"]} - #{project["url"]}")
@@ -12,7 +15,7 @@ defmodule Lambdapad.Cli do
 
   def main([lambdapad_file]) do
     [{mod, _}] = Code.compile_file(lambdapad_file)
-    workdir = Path.absname(Path.dirname(lambdapad_file))
+    workdir = absname(Path.dirname(lambdapad_file))
     {:ok, config} = Config.init(mod.config(), workdir)
 
     output_dir = Path.join([workdir, config[:output_dir] || "site"])
@@ -133,22 +136,24 @@ defmodule Lambdapad.Cli do
         is_nil(pages) ->
           # FIXME the configuration here should be in map format
           plist_config = Config.to_proplist(config)
-          env = plist_config
+          env_data = Enum.to_list(page_data[:env])
+          env = plist_config ++ env_data
           url = resolve_uri(config, name, page_data[:uri], env)
           file = build_file_abspath(output_dir, url, page_data[:uri_type])
           Logger.info("generating #{file}")
           # FIXME the configuration here should be in map format
-          iodata = Html.render([], render_mod, plist_config)
+          iodata = Html.render(env_data, render_mod, plist_config)
           File.write!(file, iodata)
 
         page_data[:index] and page_data[:paginated] == false ->
           # FIXME the configuration here should be in map format
           plist_config = Config.to_proplist(config)
           vars = process_vars(page_data, pages)
-          url = resolve_uri(config, name, page_data[:uri], vars)
+          env_data = Enum.to_list(page_data[:env])
+          url = resolve_uri(config, name, page_data[:uri], vars ++ env_data)
           file = build_file_abspath(output_dir, url, page_data[:uri_type])
           Logger.info("generating #{file}")
-          iodata = Html.render(vars, render_mod, plist_config)
+          iodata = Html.render(vars ++ env_data, render_mod, plist_config)
           File.write!(file, iodata)
 
         page_data[:index] ->
@@ -190,11 +195,12 @@ defmodule Lambdapad.Cli do
               end
 
             vars = pager_data[index][:vars]
+            env_data = Enum.to_list(page_data[:env])
             url = pager_data[index][:url]
             file = build_file_abspath(output_dir, url, page_data[:uri_type])
             Logger.info("generating #{file}")
             plist_config = Config.to_proplist(config)
-            iodata = Html.render(vars ++ pager, render_mod, plist_config)
+            iodata = Html.render(vars ++ pager ++ env_data, render_mod, plist_config)
             File.write!(file, iodata)
           end)
 
@@ -202,20 +208,22 @@ defmodule Lambdapad.Cli do
           Enum.each(pages, fn
             {index, data} ->
               vars = process_vars(page_data, data, index)
-              url = resolve_uri(config, name, page_data[:uri], vars, index)
+              env_data = Enum.to_list(page_data[:env])
+              url = resolve_uri(config, name, page_data[:uri], vars ++ env_data, index)
               file = build_file_abspath(output_dir, url, page_data[:uri_type])
               Logger.info("generating #{file}")
               plist_config = Config.to_proplist(config)
-              iodata = Html.render(vars, render_mod, plist_config)
+              iodata = Html.render(vars ++ env_data, render_mod, plist_config)
               File.write!(file, iodata)
 
             data when is_map(data) ->
               vars = process_vars(page_data, data)
-              url = resolve_uri(config, name, page_data[:uri], vars)
+              env_data = Enum.to_list(page_data[:env])
+              url = resolve_uri(config, name, page_data[:uri], vars ++ env_data)
               file = build_file_abspath(output_dir, url, page_data[:uri_type])
               Logger.info("generating #{file}")
               plist_config = Config.to_proplist(config)
-              iodata = Html.render(vars, render_mod, plist_config)
+              iodata = Html.render(vars ++ env_data, render_mod, plist_config)
               File.write!(file, iodata)
           end)
       end
@@ -288,7 +296,7 @@ defmodule Lambdapad.Cli do
 
   defp build_file_abspath(output_dir, url, :dir) do
     url_data = URI.parse(url)
-    abs_path = Path.absname(Path.join([output_dir, url_data.path]))
+    abs_path = Path.absname(Path.join([output_dir, url_data.path || "/"]))
     :ok = File.mkdir_p!(abs_path)
     Path.join([abs_path, "index.html"])
   end

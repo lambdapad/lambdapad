@@ -2,7 +2,7 @@ id     : first-impressions
 title  : My First Impressions Of LambdaPad
 date   : 2014-08-09
 author : Stan The Martian
-blurb  : How the Erlang based site generator strikes my fancy.
+excerpt: How the Erlang based site generator strikes my fancy.
 
 Having used LambdaPad for my awesome blog, here is my first impression.
 

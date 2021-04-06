@@ -86,7 +86,8 @@ defmodule Lambdapad do
           headers: true,
           excerpt: true,
           from: nil,
-          var_name: "page"
+          var_name: "page",
+          env: %{}
         }
       end
 
