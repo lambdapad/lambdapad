@@ -19,13 +19,17 @@ defmodule Lambdapad.Html do
         {:ok, _module, warnings} ->
           if warnings != [], do: Logger.warn("warnings: #{inspect(warnings)}")
           Logger.info("processed #{module}")
-          {:ok, module}
+          module
 
         {:error, error, []} ->
-          {:error, error}
+          raise """
+          template #{inspect(name)} file #{inspect(html_file)} not found
+
+          error: #{inspect(error)}
+          """
       end
     else
-      {:ok, module}
+      module
     end
   end
 
