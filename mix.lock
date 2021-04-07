@@ -1,7 +1,7 @@
 %{
   "earmark": {:git, "https://github.com/manuel-rubio/earmark.git", "cabbcbca38d5e3ff30e0f0aab25832e3bb07d627", []},
   "earmark_parser": {:hex, :earmark_parser, "1.4.12", "b245e875ec0a311a342320da0551da407d9d2b65d98f7a9597ae078615af3449", [:mix], [], "hexpm", "711e2cc4d64abb7d566d43f54b78f7dc129308a63bc103fbd88550d2174b3160"},
-  "erlydtl": {:hex, :erlydtl, "0.14.0", "964b2dc84f8c17acfaa69c59ba129ef26ac45d2ba898c3c6ad9b5bdc8ba13ced", [:rebar3], [], "hexpm", "d80ec044cd8f58809c19d29ac5605be09e955040911b644505e31e9dd8143431"},
+  "erlydtl": {:git, "https://github.com/manuel-rubio/erlydtl.git", "8fe0648ddca29cea659e58b1f00e66839498a959", []},
   "pockets": {:hex, :pockets, "1.0.0", "d542e2a1a5a734c1d3b50504beb724f5e69e325429fb5b3ca88d8ec1dddc7705", [:mix], [], "hexpm", "0a221972a7f8e911682b5edf819f0571c4b7cc6fd207aa743278958460b808ad"},
   "toml": {:hex, :toml, "0.6.2", "38f445df384a17e5d382befe30e3489112a48d3ba4c459e543f748c2f25dd4d1", [:mix], [], "hexpm", "d013e45126d74c0c26a38d31f5e8e9b83ea19fc752470feb9a86071ca5a672fa"},
 }

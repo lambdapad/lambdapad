@@ -9,8 +9,11 @@ defmodule Lambdapad.Html do
       html_file_path = to_charlist(Path.join([templates_dir, html_file]))
       opts = [
         :return,
-        libraries: [{"widget", Lambdapad.Html.Widget}],
-        default_libraries: ["widget"]
+        libraries: [
+          {"widget", Lambdapad.Html.Widget},
+          {"filters", Lambdapad.Html.Filters}
+        ],
+        default_libraries: ["widget", "filters"]
       ]
       case :erlydtl.compile_file(html_file_path, module, opts) do
         {:ok, _module, warnings} ->

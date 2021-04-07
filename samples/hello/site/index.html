@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="bootstrap.min.css">
+  </head>
+  <body style="padding: 20px 0 40px">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+          <h1></h1>
+          <p>This page was generated using LambdaPad. It's Elixir! It's Simple!</p>
+
+          <p>LambdaPad lets you generate a site by melding data and templates. You
+            can store data in TOML and write pages and posts using Markdown.</p>
+
+          <p>LambdaPad defines the entire site definition in a
+            single <code>lambdapad.exs</code> file. Here's the file that was used to
+            generate this page:</p>
+
+          <pre>import Lambdapad
+
+blog do
+  pages &quot;index&quot; do
+    set from: &quot;pages/hello.md&quot;
+    set template: &quot;index.html&quot;
+    set uri: &quot;/&quot;
+    set var_name: &quot;page&quot;
+  end
+end
+</pre>
+
+          <p>Let's break it down. Every LambdaPad file is an Elixir module
+          importing <code>Lambdapad</code>. That's what this line says:</p>
+
+          <pre>import Lambdapad
+</pre>
+
+          <p>Next, the <code>blog</code> and <code>config</code> blocks:</p>
+
+          <pre>blog do
+  pages &quot;index&quot; do
+    set from: &quot;pages/hello.md&quot;
+    set template: &quot;index.html&quot;
+    set uri: &quot;/&quot;
+    set var_name: &quot;page&quot;
+  end
+end
+</pre>
+
+          <p>This returns an Elixir term that's used when defining the site and
+          generating content from templates. For example, this snippet can be
+          used in a template to generate a header containing the value
+          of <code>msg</code>:</p>
+
+          
+          <pre>&lt;h1>{{ page.msg }}&lt;/h1></pre>
+          
+
+          <p>This snippet will render as:</p>
+
+          <pre>&lt;h1>Hello from Markdown!&lt;/h1></pre>
+
+          <p>That's it! When you run <code>lpad</code>, the site is
+          generated!</p>
+
+          <h2>Mardown Files</h2>
+
+          <p>Everyone loves Markdown! So LambdaPad supports Markdown!</p>
+
+          <p>Here's <code>hello.md</code>:</p>
+
+          <pre>msg: Hello from Markdown!
+
+Markdown an easy way to maintain structured text that can be rendered in
+various ways.
+
+- It&#039;s human readable
+- It&#039;s got a pretty easy syntax
+- It can be rendered as HTML
+
+Delightful!
+</pre>
+
+          <p>LambdaPad supports a special header section for markdown files,
+          which can contain metadata for the file. In this example we have
+          a <code>msg</code> attribute, which we'll render thusly:</p>
+
+          <blockquote>
+            Hello from Markdown!
+          </blockquote>
+
+          <p>This is the code we used:</p>
+
+          
+          <pre>{{ page.msg }}</pre>
+          
+
+          <p>We can render the body of the markdown using
+          the <code>markdown_to_html</code> filter. Here's the body as
+          HTML:</p>
+
+          <blockquote>
+            <p>
+msg: Hello from Markdown!</p>
+<p>
+Markdown an easy way to maintain structured text that can be rendered in
+various ways.</p>
+<ul>
+  <li>
+It&#39;s human readable  </li>
+  <li>
+It&#39;s got a pretty easy syntax  </li>
+  <li>
+It can be rendered as HTML  </li>
+</ul>
+<p>
+Delightful!</p>
+
+          </blockquote>
+
+          <p>Here's the code we used:</p>
+
+          
+          <pre>{{ 'pages/hello.md'|read_file|markdown_to_html }}</pre>
+          
+
+          <p>And Hello World ends. Word.</p>
+        </div>
+        <div class="col-md-2"></div>
+      </div>
+    </div>
+  </body>
+</html>

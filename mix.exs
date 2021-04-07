@@ -23,8 +23,8 @@ defmodule Lambdapad.MixProject do
   defp deps do
     [
       {:earmark, github: "manuel-rubio/earmark"},
+      {:erlydtl, github: "manuel-rubio/erlydtl"},
       {:pockets, "~> 1.0"},
-      {:erlydtl, "~> 0.14"},
       {:toml, "~> 0.6"}
     ]
   end

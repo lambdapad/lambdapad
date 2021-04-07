@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="bootstrap.min.css">
+  </head>
+  <body style="padding: 20px 0 40px">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+          <h1>{{ msg }}</h1>
+          <p>This page was generated using LambdaPad. It's Elixir! It's Simple!</p>
+
+          <p>LambdaPad lets you generate a site by melding data and templates. You
+            can store data in TOML and write pages and posts using Markdown.</p>
+
+          <p>LambdaPad defines the entire site definition in a
+            single <code>lambdapad.exs</code> file. Here's the file that was used to
+            generate this page:</p>
+
+          <pre>{{ 'lambdapad.exs'|read_file }}</pre>
+
+          <p>Let's break it down. Every LambdaPad file is an Elixir module
+          importing <code>Lambdapad</code>. That's what this line says:</p>
+
+          <pre>{{ 'lambdapad.exs'|read_file:'1:1' }}</pre>
+
+          <p>Next, the <code>blog</code> and <code>pages</code> block:</p>
+
+          <pre>{{ 'lambdapad.exs'|read_file:'3:10' }}</pre>
+
+          <p>This returns an Elixir term that's used when defining the site and
+          generating content from templates. For example, this snippet can be
+          used in a template to generate a header containing the value
+          of <code>msg</code>:</p>
+
+          {% verbatim %}
+          <pre>&lt;h1>{{ page.msg }}&lt;/h1></pre>
+          {% endverbatim %}
+
+          <p>This snippet will render as:</p>
+
+          <pre>&lt;h1>{{ page.msg }}&lt;/h1></pre>
+
+          <p>That's it! When you run <code>lpad</code>, the site is
+          generated!</p>
+
+          <h2>Mardown Files</h2>
+
+          <p>Everyone loves Markdown! So LambdaPad supports Markdown!</p>
+
+          <p>Here's <code>hello.md</code>:</p>
+
+          <pre>{{ 'pages/hello.md'|read_file }}</pre>
+
+          <p>LambdaPad supports a special header section for markdown files,
+          which can contain metadata for the file. In this example we have
+          a <code>msg</code> attribute, which we'll render thusly:</p>
+
+          <blockquote>
+            {{ page.msg }}
+          </blockquote>
+
+          <p>This is the code we used:</p>
+
+          {% verbatim %}
+          <pre>{{ page.msg }}</pre>
+          {% endverbatim %}
+
+          <p>We can render the body of the markdown using
+          the <code>markdown_to_html</code> filter. Here's the body as
+          HTML:</p>
+
+          <blockquote>
+            {{ 'pages/hello.md'|read_file|markdown_to_html }}
+          </blockquote>
+
+          <p>Here's the code we used:</p>
+
+          {% verbatim %}
+          <pre>{{ 'pages/hello.md'|read_file|markdown_to_html }}</pre>
+          {% endverbatim %}
+
+          <p>And Hello World ends. Word.</p>
+        </div>
+        <div class="col-md-2"></div>
+      </div>
+    </div>
+  </body>
+</html>
