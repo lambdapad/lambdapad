@@ -3,17 +3,27 @@ defmodule Lambdapad.Cli do
 
   alias Lambdapad.{Config, Generate}
 
+  @default_file "lambdapad.exs"
+
   defp absname("."), do: File.cwd!()
   defp absname(dir), do: Path.absname(dir)
 
-  def main(["--version"]) do
-    project = Config.lambdapad_metainfo()["lambdapad"]
-    IO.puts("#{project["name"]} v#{project["vsn"]} - #{project["url"]}")
+  def main(args) do
+    args
+    |> parse_options()
+    |> commands()
   end
 
-  def main([]), do: main(["lambdapad.exs"])
+  def commands(%_{args: %{infile: nil}} = params) do
+    commands(%{params | args: %{infile: @default_file}})
+  end
 
-  def main([lambdapad_file]) do
+  def commands(%_{args: %{infile: lambdapad_file}, flags: %{verbosity: _loglevel}}) do
+    unless File.exists?(lambdapad_file) do
+      IO.puts("File #{lambdapad_file} not found.")
+      System.halt(1)
+    end
+
     [{mod, _}] = Code.compile_file(lambdapad_file)
     workdir = absname(Path.dirname(lambdapad_file))
     {:ok, config} = Config.init(mod.config(), workdir)
@@ -29,5 +39,32 @@ defmodule Lambdapad.Cli do
 
     IO.puts("Ready!")
     :ok
+  end
+
+  defp parse_options(args) do
+    spec = Config.lambdapad_metainfo()["lambdapad"]
+    Optimus.new!(
+      description: spec["name"],
+      version: spec["vsn"],
+      about: spec["description"],
+      allow_unknown_args: false,
+      parse_double_dash: true,
+      args: [
+        infile: [
+          value_name: "lambdapad.exs",
+          help: "Specification to build your web site.",
+          required: false,
+          parser: :string
+        ]
+      ],
+      flags: [
+        verbosity: [
+          short: "-v",
+          help: "Verbosity level.",
+          multiple: true
+        ]
+      ]
+    )
+    |> Optimus.parse!(args)
   end
 end

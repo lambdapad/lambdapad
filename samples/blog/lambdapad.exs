@@ -47,7 +47,7 @@ blog do
     set template: "example.html"
     set uri: "/examples"
     set env: %{
-      "example_file_content" => File.read!("lambdapad.exs"),
+      "example_file_content" => File.read!(Path.join([__DIR__, "lambdapad.exs"])),
       "example_file" => "lambdapad.exs"
     }
   end

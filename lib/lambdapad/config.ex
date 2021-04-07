@@ -11,6 +11,7 @@ defmodule Lambdapad.Config do
       "lambdapad" => %{
         "name" => spec[:name],
         "vsn" => spec[:version],
+        "description" => spec[:description],
         "url" => spec[:homepage_url]
       }
     }

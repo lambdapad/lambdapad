@@ -3,6 +3,8 @@ defmodule Lambdapad.MixProject do
 
   def project do
     [
+      name: "Lambdapad",
+      description: "Static website creator",
       app: :lambdapad,
       version: "0.1.0",
       elixir: "~> 1.11",
@@ -32,7 +34,8 @@ defmodule Lambdapad.MixProject do
       {:earmark, github: "manuel-rubio/earmark"},
       {:erlydtl, github: "manuel-rubio/erlydtl"},
       {:pockets, "~> 1.0"},
-      {:toml, "~> 0.6"}
+      {:toml, "~> 0.6"},
+      {:optimus, "~> 0.2"}
     ]
   end
 end
