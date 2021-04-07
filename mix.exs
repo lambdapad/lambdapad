@@ -8,9 +8,16 @@ defmodule Lambdapad.MixProject do
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      escript: [main_module: Lambdapad.Cli],
+      escript: escript(),
       name: "Lambdapad",
       homepage_url: "https://lambdapad.com"
+    ]
+  end
+
+  defp escript do
+    [
+      main_module: Lambdapad.Cli,
+      name: "lpad"
     ]
   end
 
