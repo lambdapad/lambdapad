@@ -30,6 +30,4 @@ dig deeper, your knowledge of Erlang will improve.
 That's the idea.
 
 [^calculus]: Refer to this video for more on the Calculus:
- <p><iframe width="420" height="345"
- src="https://www.youtube.com/embed/zY-IueSMAPc">
- </iframe></p>
+<p><iframe width="420" height="345" src="https://www.youtube.com/embed/zY-IueSMAPc"></iframe></p>
