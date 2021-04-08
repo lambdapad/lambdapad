@@ -67,8 +67,8 @@ defmodule Lambdapad.Generate do
               |> chained_fun.(config)
             end
 
-          %{on: :page} ->
-            raise "transforms page and item cannot be swapped"
+          %{on: other} when other in [:page, :config] ->
+            raise "transforms config, page and item cannot be swapped"
 
           error ->
             raise "transform #{inspect(trans_item)} unknown: #{inspect(error)}"
@@ -83,9 +83,14 @@ defmodule Lambdapad.Generate do
   end
   def resolve_transforms_on_item(mod, %{transform_on_item: trans_items}) when is_binary(trans_items) do
     case mod.transform(trans_items) do
-      %{on: :item, run: trans_function} -> trans_function
-      %{on: :page} -> raise "transforms page and item cannot be swapped"
-      error -> raise "transform #{inspect(trans_items)} unknown: #{inspect(error)}"
+      %{on: :item, run: trans_function} ->
+        trans_function
+
+      %{on: other} when other in [:page, :config] ->
+        raise "transforms config, page and item cannot be swapped"
+
+      error ->
+        raise "transform #{inspect(trans_items)} unknown: #{inspect(error)}"
     end
   end
   def resolve_transforms_on_item(_mod, %{transform_on_item: trans_items}) when is_function(trans_items) do
@@ -105,8 +110,8 @@ defmodule Lambdapad.Generate do
               |> chained_fun.(config)
             end
 
-          %{on: :item} ->
-            raise "transforms page and item cannot be swapped"
+          %{on: other} when other in [:item, :config] ->
+            raise "transforms config, page and item cannot be swapped"
 
           error ->
             raise "transform #{inspect(trans_page)} unknown: #{inspect(error)}"
@@ -121,9 +126,14 @@ defmodule Lambdapad.Generate do
   end
   def resolve_transforms_on_page(mod, %{transform_on_page: trans_page}) when is_binary(trans_page) do
     case mod.transform(trans_page) do
-      %{on: :page, run: trans_function} -> trans_function
-      %{on: :item} -> raise "transforms page and item cannot be swapped"
-      error -> raise "transform #{inspect(trans_page)} unknown: #{inspect(error)}"
+      %{on: :page, run: trans_function} ->
+        trans_function
+
+      %{on: other} when other in [:item, :config] ->
+        raise "transforms config, page and item cannot be swapped"
+
+      error ->
+        raise "transform #{inspect(trans_page)} unknown: #{inspect(error)}"
     end
   end
   def resolve_transforms_on_page(_mod, %{transform_on_page: trans_page}) when is_function(trans_page) do
@@ -160,6 +170,49 @@ defmodule Lambdapad.Generate do
     |> Map.put("excerpt", excerpt)
     |> Map.put("content", get_post(post, file))
   end
+
+  def resolve_transforms_on_config(mod, %{transform_on_config: trans_config}) when is_list(trans_config) do
+    trans_config
+    |> Enum.reverse()
+    |> Enum.reduce(fn config, _posts -> config end, fn
+      (trans_config, chained_fun) when is_binary(trans_config) ->
+        case mod.transform(trans_config) do
+          %{on: :config, run: trans_function} ->
+            fn config, posts ->
+              trans_function.(config, posts)
+              |> chained_fun.(posts)
+            end
+
+          %{on: other} when other in [:item, :page] ->
+            raise "transforms config, page and item cannot be swapped"
+
+          error ->
+            raise "transform #{inspect(trans_config)} unknown: #{inspect(error)}"
+        end
+
+      (trans_config, chained_fun) when is_function(trans_config) ->
+        fn config, posts ->
+          trans_config.(config, posts)
+          |> chained_fun.(posts)
+        end
+    end)
+  end
+  def resolve_transforms_on_config(mod, %{transform_on_config: trans_config}) when is_binary(trans_config) do
+    case mod.transform(trans_config) do
+      %{on: :config, run: trans_function} ->
+        trans_function
+
+      %{on: other} when other in [:item, :page] ->
+        raise "transforms config, page and item cannot be swapped"
+
+      error ->
+        raise "transform #{inspect(trans_config)} unknown: #{inspect(error)}"
+    end
+  end
+  def resolve_transforms_on_config(_mod, %{transform_on_config: trans_config}) when is_function(trans_config) do
+    trans_config
+  end
+  def resolve_transforms_on_config(_mod, %{}), do: nil
 
   defp get_post(binary, file) do
     Earmark.as_html!(binary, file: file)

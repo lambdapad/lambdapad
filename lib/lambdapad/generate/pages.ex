@@ -6,7 +6,7 @@ defmodule Lambdapad.Generate.Pages do
     Enum.map(pages, fn {name, page_data} ->
       Logger.info("processing page #{name}")
       page_data = Map.put(page_data, "name", name)
-      format = page_data[:format] || :erlydtl
+      format = page_data[:format]
       template_name = page_data[:template]
       render_mod = Html.init(name, template_name, workdir, format)
 
@@ -16,7 +16,7 @@ defmodule Lambdapad.Generate.Pages do
         |> process_transforms_on_item(mod, config, page_data)
         |> process_transforms_on_page(mod, config, page_data)
 
-      config = process_config(pages, mod, config)
+      config = process_transforms_on_config(config, mod, pages, page_data)
       generate_pages(pages, config, name, page_data, output_dir, render_mod)
     end)
   end
@@ -48,10 +48,13 @@ defmodule Lambdapad.Generate.Pages do
     end
   end
 
-  defp process_config(nil, _mod, config), do: config
-  defp process_config(pages, mod, config) do
-    {:ok, config} = Config.transform_from_pages(mod, config, pages)
-    config
+  defp process_transforms_on_config(config, _mod, nil, _page_data), do: config
+  defp process_transforms_on_config(config, mod, pages, page_data) do
+    if transforms = Generate.resolve_transforms_on_config(mod, page_data) do
+      transforms.(config, pages)
+    else
+      config
+    end
   end
 
   defp generate_pages(nil, config, name, page_data, output_dir, render_mod) do

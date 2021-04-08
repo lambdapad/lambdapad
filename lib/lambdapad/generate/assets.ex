@@ -17,7 +17,8 @@ defmodule Lambdapad.Generate.Assets do
       Logger.debug("dst_path => #{dst_path}")
       Enum.each(Path.wildcard(src_path), fn file ->
         dst_file = String.replace_prefix(file, base_src_path, dst_path)
-        Logger.info("copying #{file} to #{dst_file}")
+        base_file = String.replace_prefix(file, base_src_path, "")
+        Logger.info("copying #{base_file}")
         File.mkdir_p(Path.dirname(dst_file))
         File.cp(file, dst_file)
       end)

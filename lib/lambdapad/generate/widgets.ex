@@ -5,7 +5,7 @@ defmodule Lambdapad.Generate.Widgets do
   def process(widgets, config, mod, workdir) do
     Enum.reduce(widgets, %{}, fn {name, widget_data}, acc ->
       Logger.info("processing widget #{name}")
-      format = widget_data[:format] || :erlydtl
+      format = widget_data[:format]
       template_name = widget_data[:template]
       render_mod = Html.init(name, template_name, workdir, format)
 
@@ -15,12 +15,24 @@ defmodule Lambdapad.Generate.Widgets do
         |> process_transforms_on_item(mod, config, widget_data)
         |> process_transforms_on_page(mod, config, widget_data)
 
-      plist_config = Config.to_proplist(config)
+      plist_config =
+        config
+        |> process_transforms_on_config(mod, pages, widget_data)
+        |> Config.to_proplist()
+
       pages = Config.to_proplist(pages)
       vars =
         case widget_data[:var_name] do
-          :plain -> pages
-          var_name when is_binary(var_name) -> [{var_name, pages}]
+          :plain ->
+            if Enum.all?(pages, &is_tuple/1) do
+              pages
+            else
+              Logger.warn("widget cannot use :plain with lists, fallback to var_name \"pages\"")
+              [{"pages", pages}]
+            end
+
+          var_name when is_binary(var_name) ->
+            [{var_name, pages}]
         end
 
       iodata = Html.render(vars, render_mod, plist_config)
@@ -49,6 +61,14 @@ defmodule Lambdapad.Generate.Widgets do
       transforms.(pages, config)
     else
       pages
+    end
+  end
+
+  defp process_transforms_on_config(config, mod, pages, widget_data) do
+    if transforms = Generate.resolve_transforms_on_config(mod, widget_data) do
+      transforms.(config, pages)
+    else
+      config
     end
   end
 end

@@ -93,7 +93,6 @@ defmodule Lambdapad do
 
       defp widgets_default() do
         %{
-          index: true,
           format: :erlydtl,
           headers: true,
           excerpt: true,
