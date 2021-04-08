@@ -1,7 +1,7 @@
 %{
   "cowboy": {:hex, :cowboy, "2.8.0", "f3dc62e35797ecd9ac1b50db74611193c29815401e53bac9a5c0577bd7bc667d", [:rebar3], [{:cowlib, "~> 2.9.1", [hex: :cowlib, repo: "hexpm", optional: false]}, {:ranch, "~> 1.7.1", [hex: :ranch, repo: "hexpm", optional: false]}], "hexpm", "4643e4fba74ac96d4d152c75803de6fad0b3fa5df354c71afdd6cbeeb15fac8a"},
   "cowlib": {:hex, :cowlib, "2.9.1", "61a6c7c50cf07fdd24b2f45b89500bb93b6686579b069a89f88cb211e1125c78", [:rebar3], [], "hexpm", "e4175dc240a70d996156160891e1c62238ede1729e45740bdd38064dad476170"},
-  "earmark": {:git, "https://github.com/manuel-rubio/earmark.git", "cabbcbca38d5e3ff30e0f0aab25832e3bb07d627", []},
+  "earmark": {:git, "https://github.com/manuel-rubio/earmark.git", "d747d73d31e8b8fa39389b01fc67cc53d946b707", []},
   "earmark_parser": {:hex, :earmark_parser, "1.4.12", "b245e875ec0a311a342320da0551da407d9d2b65d98f7a9597ae078615af3449", [:mix], [], "hexpm", "711e2cc4d64abb7d566d43f54b78f7dc129308a63bc103fbd88550d2174b3160"},
   "erlydtl": {:git, "https://github.com/manuel-rubio/erlydtl.git", "8fe0648ddca29cea659e58b1f00e66839498a959", []},
   "optimus": {:hex, :optimus, "0.2.0", "3e868b8bedc723d70189cde715df3ef804524c55b26fb33e89cd0f691f50fe80", [:mix], [], "hexpm", "95bcbf228d4ba67283747629087cc3650b10d24390e4ea533b0a64ca278c181c"},
