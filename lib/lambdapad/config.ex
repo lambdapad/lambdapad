@@ -27,6 +27,7 @@ defmodule Lambdapad.Config do
           end
           |> Map.merge(lambdapad_metainfo())
 
+        Cli.print_level2_ok()
         {:ok, config_data}
 
       error ->

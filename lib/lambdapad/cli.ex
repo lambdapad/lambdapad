@@ -163,7 +163,9 @@ defmodule Lambdapad.Cli do
 
   def print_level2(name, annex) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
-      IO.write([IO.ANSI.blue(), "  -", IO.ANSI.reset(), " ", name, " ", annex, ": "])
+      IO.write([
+        IO.ANSI.blue(), "  -", IO.ANSI.reset(), " ", name, " ",
+        IO.ANSI.yellow(), annex, IO.ANSI.reset(), " "])
     else
       IO.write([IO.ANSI.green(), ".", IO.ANSI.reset()])
     end
