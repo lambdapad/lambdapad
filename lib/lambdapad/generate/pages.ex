@@ -1,10 +1,10 @@
 defmodule Lambdapad.Generate.Pages do
-  require Logger
-  alias Lambdapad.{Config, Generate, Html}
+  alias Lambdapad.{Cli, Config, Generate, Html}
+  alias Lambdapad.Generate.Sources
 
   def process(pages, config, mod, workdir, output_dir) do
-    Enum.map(pages, fn {name, page_data} ->
-      Logger.info("processing page #{name}")
+    Enum.each(pages, fn {name, page_data} ->
+      Cli.print_level2("Pages", name)
       page_data = Map.put(page_data, "name", name)
       format = page_data[:format]
       template_name = page_data[:template]
@@ -12,20 +12,14 @@ defmodule Lambdapad.Generate.Pages do
 
       pages =
         page_data
-        |> get_files(workdir)
+        |> Sources.get_files(workdir)
         |> process_transforms_on_item(mod, config, page_data)
         |> process_transforms_on_page(mod, config, page_data)
 
       config = process_transforms_on_config(config, mod, pages, page_data)
       generate_pages(pages, config, name, page_data, output_dir, render_mod)
+      Cli.print_level2_ok()
     end)
-  end
-
-  defp get_files(%{from: nil}, _workdir), do: nil
-  defp get_files(%{from: source} = page_data, workdir) do
-    Path.join(workdir, source)
-    |> Path.wildcard()
-    |> Stream.map(&Generate.get_file(&1, page_data[:headers], page_data[:excerpt]))
   end
 
   defp process_transforms_on_item(nil, _mod, _config, _page_data), do: nil
@@ -63,7 +57,8 @@ defmodule Lambdapad.Generate.Pages do
     env = plist_config ++ env_data
     url = Generate.resolve_uri(config, name, page_data[:uri], env)
     file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
-    Logger.info("generating #{file}")
+    relative_file = String.replace_prefix(file, output_dir, "")
+    Cli.print_level3(relative_file)
     iodata = Html.render(env_data, render_mod, plist_config)
     File.write!(file, iodata)
   end
@@ -74,7 +69,8 @@ defmodule Lambdapad.Generate.Pages do
     env_data = Enum.to_list(page_data[:env])
     url = Generate.resolve_uri(config, name, page_data[:uri], vars ++ env_data)
     file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
-    Logger.info("generating #{file}")
+    relative_file = String.replace_prefix(file, output_dir, "")
+    Cli.print_level3(relative_file)
     iodata = Html.render(vars ++ env_data, render_mod, plist_config)
     File.write!(file, iodata)
   end
@@ -95,7 +91,8 @@ defmodule Lambdapad.Generate.Pages do
       env_data = Enum.to_list(page_data[:env])
       url = pager_data[index][:url]
       file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
-      Logger.info("generating #{file}")
+      relative_file = String.replace_prefix(file, output_dir, "")
+      Cli.print_level3(relative_file)
       plist_config = Config.to_proplist(config)
       iodata = Html.render(vars ++ pager ++ env_data, render_mod, plist_config)
       File.write!(file, iodata)
@@ -109,7 +106,8 @@ defmodule Lambdapad.Generate.Pages do
         env_data = Enum.to_list(page_data[:env])
         url = Generate.resolve_uri(config, name, page_data[:uri], vars ++ env_data, index)
         file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
-        Logger.info("generating #{file}")
+        relative_file = String.replace_prefix(file, output_dir, "")
+        Cli.print_level3(relative_file)
         plist_config = Config.to_proplist(config)
         iodata = Html.render(vars ++ env_data, render_mod, plist_config)
         File.write!(file, iodata)
@@ -119,7 +117,8 @@ defmodule Lambdapad.Generate.Pages do
         env_data = Enum.to_list(page_data[:env])
         url = Generate.resolve_uri(config, name, page_data[:uri], vars ++ env_data)
         file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
-        Logger.info("generating #{file}")
+        relative_file = String.replace_prefix(file, output_dir, "")
+        Cli.print_level3(relative_file)
         plist_config = Config.to_proplist(config)
         iodata = Html.render(vars ++ env_data, render_mod, plist_config)
         File.write!(file, iodata)

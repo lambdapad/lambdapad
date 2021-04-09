@@ -1,9 +1,8 @@
 defmodule Lambdapad.Html do
-  require Logger
+  alias Lambdapad.Cli
 
   def init(name, html_file, workdir, :erlydtl) when is_binary(name) do
     module = Module.concat([__MODULE__, Macro.camelize(name)])
-    Logger.debug("creating module #{module} for erlydtl")
     if not function_exported?(module, :__info__, 1) do
       templates_dir = Path.join([workdir, "templates"])
       html_file_path = to_charlist(Path.join([templates_dir, html_file]))
@@ -17,8 +16,10 @@ defmodule Lambdapad.Html do
       ]
       case :erlydtl.compile_file(html_file_path, module, opts) do
         {:ok, _module, warnings} ->
-          if warnings != [], do: Logger.warn("warnings: #{inspect(warnings)}")
-          Logger.info("processed #{module}")
+          warnings = filter_warnings(warnings)
+          if warnings != [] do
+            Cli.print_level2_warn("#{inspect(warnings)}")
+          end
           module
 
         {:error, error, []} ->
@@ -31,6 +32,21 @@ defmodule Lambdapad.Html do
     else
       module
     end
+  end
+
+  defp filter_warnings(warnings) do
+    filter_warnings(warnings, [])
+  end
+
+  defp filter_warnings([], acc), do: acc
+  defp filter_warnings([{_file, [{:none, _, :no_out_dir}]} | rest], acc) do
+    filter_warnings(rest, acc)
+  end
+  defp filter_warnings([{'', [{_n, :sys_core_fold, :useless_building}]} | rest], acc) do
+    filter_warnings(rest, acc)
+  end
+  defp filter_warnings([warning|rest], acc) do
+    filter_warnings(rest, [warning|acc])
   end
 
   def render(vars, module, config) do

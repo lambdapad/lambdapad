@@ -1,27 +1,25 @@
 defmodule Lambdapad.Generate.Assets do
-  require Logger
+  alias Lambdapad.Cli
 
   def process(assets, workdir) do
     Enum.each(assets, fn {name, data} ->
-      Logger.debug("copying data based on #{inspect(name)} => #{inspect(data)}")
+      Cli.print_level2("Assets", name)
       src_path = Path.join([workdir, data[:from]])
-      Logger.debug("src_path => #{src_path}")
       base_src_path =
         src_path
         |> Path.split()
         |> Enum.take_while(& not String.contains?(&1, ["*", "?", "[", "]", "{", "}"]))
         |> Path.join()
 
-      Logger.debug("base_src_path => #{base_src_path}")
       dst_path = Path.join([workdir, data[:to]])
-      Logger.debug("dst_path => #{dst_path}")
       Enum.each(Path.wildcard(src_path), fn file ->
         dst_file = String.replace_prefix(file, base_src_path, dst_path)
         base_file = String.replace_prefix(file, base_src_path, "")
-        Logger.info("copying #{base_file}")
+        Cli.print_level3(base_file)
         File.mkdir_p(Path.dirname(dst_file))
         File.cp(file, dst_file)
       end)
+      Cli.print_level2_ok()
     end)
   end
 end

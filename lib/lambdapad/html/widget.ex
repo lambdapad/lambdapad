@@ -1,5 +1,4 @@
 defmodule Lambdapad.Html.Widget do
-  require Logger
   @behaviour :erlydtl_library
 
   def version, do: 1

@@ -1,5 +1,5 @@
 defmodule Lambdapad.Config do
-  require Logger
+  alias Lambdapad.Cli
 
   def lambdapad_metainfo() do
     spec = unquote(Lambdapad.MixProject.project())
@@ -14,6 +14,7 @@ defmodule Lambdapad.Config do
   end
 
   def init(%{format: "toml", from: file} = config, workdir) do
+    Cli.print_level2("Parsing", file)
     case Toml.decode_file(Path.join([workdir, file])) do
       {:ok, config_data} ->
         config_data = Map.put(config_data, "workdir", workdir)
@@ -29,8 +30,8 @@ defmodule Lambdapad.Config do
         {:ok, config_data}
 
       error ->
-        Logger.error("configuration file #{file} error: #{inspect(error)}")
-        :init.stop(1)
+        Cli.print_error("#{inspect(error)}")
+        System.halt(1)
     end
   end
 
