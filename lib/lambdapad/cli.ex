@@ -31,6 +31,7 @@ defmodule Lambdapad.Cli do
   defp commands(%_{args: %{infile: lambdapad_file}, flags: %{verbosity: loglevel}}) do
     workdir = cwd!(lambdapad_file)
 
+    Application.put_env(:lambdapad, :workdir, workdir)
     Application.put_env(:lambdapad, :loglevel, loglevel)
     Sources.init()
 
@@ -41,12 +42,10 @@ defmodule Lambdapad.Cli do
     print_level2_ok()
 
     {:ok, config} = Config.init(mod.config(), workdir)
-    print_level2_ok()
-    print_level1_ok(t)
 
-    t = print_level1("Create directory")
+    print_level2("Create directory")
     relative_output_dir = config["blog"]["output_dir"] || "site"
-    print_level2(relative_output_dir)
+    print_level3(relative_output_dir)
     output_dir = Path.join([workdir, relative_output_dir])
     :ok = File.mkdir_p(output_dir)
     print_level2_ok()

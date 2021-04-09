@@ -7,16 +7,26 @@ defmodule Lambdapad.Html.Filters do
 
   def inventory(:tags), do: []
 
+  defp abs_filename("/" <> _ = filename), do: filename
+  defp abs_filename(relative_name) do
+    Path.join([Application.get_env(:lambdapad, :workdir, ""), relative_name])
+  end
+
   def read_file(:undefined), do: ""
   def read_file(file) do
-    File.read!(file)
+    file
+    |> abs_filename()
+    |> File.read!()
   end
 
   def read_file(:undefined, _), do: ""
   def read_file(file, lines_spec) do
+    file = abs_filename(file)
     {first, last} = parse_lines(lines_spec)
 
-    File.stream!(file)
+    file
+    |> abs_filename()
+    |> File.stream!()
     |> Stream.with_index(1)
     |> Stream.drop_while(fn {_, i} -> i < first end)
     |> Stream.take_while(fn {_, i} -> last == :infinity or i <= last end)
