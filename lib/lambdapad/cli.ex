@@ -5,6 +5,7 @@ defmodule Lambdapad.Cli do
 
   @default_file "lambdapad.exs"
   @default_port 8080
+  @default_verbosity 1
 
   defp absname("."), do: File.cwd!()
   defp absname(dir), do: Path.absname(dir)
@@ -100,7 +101,7 @@ defmodule Lambdapad.Cli do
     :ok
   end
 
-  defp commands({[:http], %_{args: %{infile: lambdapad_file}, options: %{port: port}}}) do
+  defp commands({[:http], %_{args: %{infile: lambdapad_file}, options: %{port: port}} = params}) do
     workdir = cwd!(lambdapad_file)
 
     [{mod, _}] = Code.compile_file(lambdapad_file)
@@ -110,7 +111,11 @@ defmodule Lambdapad.Cli do
     port = port || config["http"]["port"] || @default_port
 
     Http.start_server(port, dir)
-    IO.gets("")
+    IO.puts([IO.ANSI.green(), "options", IO.ANSI.reset(), ": [q]uit or [r]ecompile"])
+    if IO.gets("") == "r\n" do
+      commands(%{params | options: %{}, flags: %{verbosity: @default_verbosity}})
+      commands({[:http], params})
+    end
   end
 
   def print_error(msg) do

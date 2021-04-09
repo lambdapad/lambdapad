@@ -2,10 +2,15 @@ defmodule Lambdapad.Http do
   require Logger
 
   def start_server(port, dir) do
-    IO.puts("starting listening on http://localhost:#{port}/ for #{dir}")
+    IO.puts(["HTTP Server on ", IO.ANSI.yellow(), "http://localhost:#{port}/", IO.ANSI.reset()])
+    IO.puts(["Reading from ", IO.ANSI.green(), dir, IO.ANSI.reset()])
     opts = %{:env => %{:dispatch => dispatch(dir)}}
     port_info = [:inet, port: port]
-    {:ok, _} = :cowboy.start_clear(__MODULE__, port_info, opts)
+    case :cowboy.start_clear(__MODULE__, port_info, opts) do
+      {:ok, _} -> :ok
+      {:error, {:already_started, _}} -> :ok
+      {:error, error} -> throw({:error, error})
+    end
   end
 
   defp dispatch(dir) do
