@@ -324,6 +324,39 @@ And then you can write the content keeping an empty (or blank) line between the 
 
 For pages, it's only required the `id` the rest of information could be useful only in case you are going to need it inside of your page from the template.
 
+The header isn't mandatory but if we want to skip it, we have to configure for the page or the widget the correspondent:
+
+```elixir
+set headers: false
+```
+
+Whe we skip the header the `id` is set as the name of the file removing the extension.
+
+In the same way, we can write a content which have included an excerpt:
+
+```
+This is the excerpt of my post.
+<!--more-->
+
+This is the rest of my post.
+```
+
+The `<!--more-->` tag is giving to Lambdapad the indication for where it should be cut to get the excerpt. If we are using:
+
+```elixir
+set excerpt: true
+```
+
+But we are not using the mark:
+
+```
+This is the first paragraph.
+
+This is the second paragraph.
+```
+
+Lambdapad is choosing the first paragraph as the excerpt automatically.
+
 ### Templates
 
 At this moment we support only [ErlyDTL][ED] for templates. This is based on [Django Templates][DT] and in use for different systems in the Python ecosystem.
@@ -355,6 +388,13 @@ Lambdapad also insert information inside of the template if you want to use it l
 - `url` is set as https://lambdapad.com
 - `vsn` is set as the version number of the Lambdapad in use, at this moment: `0.1.0`
 - `description` is set as `Static website generator`
+
+From every post we have also, and usually, available the following data:
+
+- `excerpt`: it's the text choosen as excerpt. If we configure the excerpt as false then it's going to be empty. It's clean text and all of the possible tags (i.e. strong, em or links) are removed.
+- `excerpt_html`: it's the HTML version of the excerpt.
+- `content`: the HTML content for the page.
+- `id`: it could be given from headers or set by Lambdapad if we disabled headers.
 
 ### Assets
 
