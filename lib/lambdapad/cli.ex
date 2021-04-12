@@ -118,6 +118,68 @@ defmodule Lambdapad.Cli do
     end
   end
 
+  defp commands({[:new, :list], _}) do
+    IO.write("Available templates: ")
+
+    list_templates()
+    |> Enum.join(", ")
+    |> IO.puts()
+  end
+
+  defp commands({[:new], %_{args: %{name: name}, options: %{template: template}, flags: %{verbosity: loglevel}}}) do
+    if File.exists?(name) do
+      IO.puts([IO.ANSI.red(), "error", IO.ANSI.reset(), ": cannot create #{name} directory."])
+      System.halt(1)
+    end
+
+    files = get_template_files(template)
+    unless files do
+      IO.puts([IO.ANSI.red(), "error", IO.ANSI.reset(), ": template #{template} not found."])
+      System.halt(1)
+    end
+
+    Application.put_env(:lambdapad, :loglevel, loglevel)
+
+    t = print_level1("Creating project", name)
+    print_level2("Creating directory", name)
+    File.mkdir_p!(name)
+    print_level2_ok()
+    print_level2("Creating files")
+    Enum.each(files, fn({file, content}) ->
+      print_level3(file)
+      filepath = Path.join([name, file])
+      dirpath = Path.dirname(filepath)
+      File.mkdir_p!(dirpath)
+      File.write!(filepath, content)
+    end)
+    print_level2_ok()
+    print_level1_ok(t)
+  end
+
+  Module.register_attribute(__MODULE__, :templates, accumulate: true)
+  for "templates/" <> template <- Path.wildcard("templates/*") do
+    files =
+      Path.wildcard("templates/#{template}/**")
+      |> Enum.filter(& File.regular?/1)
+
+    @templates {template,
+      for filepath <- files do
+        file = String.replace_prefix(filepath, "templates/#{template}/", "")
+        {file, File.read!(filepath)}
+      end}
+  end
+
+  defp get_template_files(template) do
+    case List.keyfind(@templates, template, 0) do
+      {^template, files} -> files
+      nil -> nil
+    end
+  end
+
+  defp list_templates() do
+    for {name, _} <- @templates, do: name
+  end
+
   def print_error(msg) do
     IO.puts([IO.ANSI.red(), " error: ", msg, IO.ANSI.reset()])
   end
@@ -203,52 +265,36 @@ defmodule Lambdapad.Cli do
 
   defp parse_options(args) do
     spec = Config.lambdapad_metainfo()["lambdapad"]
+    infile = [infile: [
+      value_name: "lambdapad.exs",
+      help: "Specification to build your web site.",
+      required: false,
+      parser: :string
+    ]]
+    verbosity = [verbosity: [
+      short: "-v",
+      help: "Verbosity level.",
+      multiple: true,
+      default: 1
+    ]]
     Optimus.new!(
       description: spec["name"],
       version: spec["vsn"],
       about: spec["description"],
       allow_unknown_args: false,
       parse_double_dash: true,
-      args: [
-        infile: [
-          value_name: "lambdapad.exs",
-          help: "Specification to build your web site.",
-          required: false,
-          parser: :string
-        ]
-      ],
-      flags: [
-        verbosity: [
-          short: "-v",
-          help: "Verbosity level.",
-          multiple: true,
-          default: 1
-        ]
-      ],
+      args: infile,
+      flags: verbosity,
       subcommands: [
         clean: [
           name: "clean",
           about: "Remove the output directory if exists",
-          args: [
-            infile: [
-              value_name: "lambdapad.exs",
-              help: "Specification to build your web site.",
-              required: false,
-              parser: :string
-            ]
-          ]
+          args: infile
         ],
         http: [
           name: "http",
           about: "HTTP Server for fast checking",
-          args: [
-            infile: [
-              value_name: "lambdapad.exs",
-              help: "Specification to build your web site.",
-              required: false,
-              parser: :string
-            ]
-          ],
+          args: infile,
           options: [
             port: [
               value_name: "PORT",
@@ -263,6 +309,36 @@ defmodule Lambdapad.Cli do
                 end
               end,
               required: false
+            ]
+          ]
+        ],
+        new: [
+          name: "new",
+          about: "New project based on a template, check: new --list",
+          args: [
+            name: [
+              value_name: "name",
+              help: "Specify the name of the project to be created.",
+              parser: :string,
+              required: true
+            ]
+          ],
+          flags: verbosity,
+          options: [
+            template: [
+              value_name: "NAME",
+              short: "-t",
+              long: "--template",
+              help: "Choose the template name (use --list to see available)",
+              parser: :string,
+              required: false,
+              default: "blog"
+            ]
+          ],
+          subcommands: [
+            list: [
+              name: "list",
+              about: "List available templates"
             ]
           ]
         ]
