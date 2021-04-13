@@ -2,6 +2,7 @@ defmodule Lambdapad.Generate.Sources do
   alias Lambdapad.Cli
 
   @table :files
+  @opts [smartypants: false, gfm_tables: true, footnotes: true]
 
   def init() do
     {:ok, @table} = Pockets.new(@table)
@@ -54,7 +55,7 @@ defmodule Lambdapad.Generate.Sources do
   end
 
   defp get_post(binary, file) do
-    {_status, html, messages} = Earmark.as_html(binary)
+    {_status, html, messages} = Earmark.as_html(binary, @opts)
     Enum.each(messages, fn {:warning, line, message} ->
       Cli.print_level2_warn([file, ":", to_string(line), " ", message])
     end)
@@ -62,7 +63,7 @@ defmodule Lambdapad.Generate.Sources do
   end
 
   defp get_excerpt_html(binary, file) do
-    {_status, html, messages} = Earmark.as_html(binary)
+    {_status, html, messages} = Earmark.as_html(binary, @opts)
     Enum.each(messages, fn {:warning, line, message} ->
       Cli.print_level2_warn([file, ":", to_string(line), " ", message])
     end)

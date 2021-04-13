@@ -47,7 +47,7 @@ defmodule Lambdapad.Html.Filters do
 
   def markdown_to_html(:undefined), do: ""
   def markdown_to_html(text) do
-    {_status, html, _messages} = Earmark.as_html(text, smartypants: false)
+    {_status, html, _messages} = Earmark.as_html(text, smartypants: false, gfm_tables: true, footnotes: true)
     {:safe, html}
   end
 end
