@@ -17,6 +17,7 @@ You need only to get the code, from source code you can:
 ```
 git clone https://github.com/altenwald/lambdapad
 cd lambdapad
+mix deps.get
 mix escript.build
 ```
 
