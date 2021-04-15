@@ -1,6 +1,6 @@
 defmodule Lambdapad.Cli do
 
-  alias Lambdapad.{Config, Generate, Http}
+  alias Lambdapad.{Cli, Config, Generate, Http}
   alias Lambdapad.Generate.Sources
 
   @default_file "lambdapad.exs"
@@ -22,27 +22,51 @@ defmodule Lambdapad.Cli do
   def main(args) do
     args
     |> parse_options()
-    |> commands()
+    |> commands(args)
   end
 
-  defp commands(%_{args: %{infile: nil}} = params) do
-    commands(%{params | args: %{infile: @default_file}})
+  def get_config({calling_mod, _} = mod, rawargs), do: calling_mod.get_config(mod, rawargs)
+
+  def get_widgets({calling_mod, _} = mod, config), do: calling_mod.get_widgets(mod, config)
+
+  def get_pages({calling_mod, _} = mod, config), do: calling_mod.get_pages(mod, config)
+
+  def get_assets({calling_mod, _} = mod, config), do: calling_mod.get_assets(mod, config)
+
+  def apply_transform({calling_mod, _} = mod, items), do: calling_mod.apply_transform(mod, items)
+
+  defp compile(filename) do
+    cond do
+      String.ends_with?(filename, ".exs") ->
+        Cli.Exs.compile(filename)
+
+      String.ends_with?(filename, ".erl") ->
+        Cli.Erl.compile(filename)
+
+      :else ->
+        IO.puts("File #{filename} unknown.")
+        System.halt(1)
+    end
   end
 
-  defp commands(%_{args: %{infile: lambdapad_file}, flags: %{verbosity: loglevel}}) do
-    workdir = cwd!(lambdapad_file)
+  defp commands(%_{args: %{infile: nil}} = params, rawargs) do
+    commands(%{params | args: %{infile: @default_file}}, rawargs)
+  end
+
+  defp commands(%_{args: %{infile: filename}, flags: %{verbosity: loglevel}}, rawargs) do
+    workdir = cwd!(filename)
 
     Application.put_env(:lambdapad, :workdir, workdir)
     Application.put_env(:lambdapad, :loglevel, loglevel)
     Sources.init()
 
-    gt = print_level1("Reading configuration", lambdapad_file)
+    gt = print_level1("Reading configuration", filename)
 
-    t = print_level2("Compiling", lambdapad_file)
-    [{mod, _}] = Code.compile_file(lambdapad_file)
+    t = print_level2("Compiling", filename)
+    {:ok, mod} = compile(filename)
     print_level2_ok()
 
-    {:ok, config} = Config.init(mod.config(), workdir)
+    {:ok, config} = Config.init(get_config(mod, rawargs), workdir)
 
     print_level2("Create directory")
     relative_output_dir = config["blog"]["output_dir"] || "site"
@@ -53,37 +77,38 @@ defmodule Lambdapad.Cli do
     print_level1_ok(t)
 
     t = print_level1("Processing widgets")
-    widgets = Generate.Widgets.process(mod.widgets(), config, mod, workdir)
+    widgets = Generate.Widgets.process(get_widgets(mod, config), config, mod, workdir)
     config = Map.put(config, "widgets", widgets)
     print_level1_ok(t)
 
     t = print_level1("Processing pages")
-    Generate.Pages.process(mod.pages(), config, mod, workdir, output_dir)
+    Generate.Pages.process(get_pages(mod, config), config, mod, workdir, output_dir)
     print_level1_ok(t)
 
     t = print_level1("Processing assets")
-    Generate.Assets.process(mod.assets(), workdir)
+    Generate.Assets.process(get_assets(mod, config), workdir)
     print_level1_ok(t)
 
     gt = System.system_time(:millisecond) - gt
     IO.puts([IO.ANSI.blue(), "Done (#{gt / 1000}s)", IO.ANSI.reset()])
+    Sources.terminate()
     :ok
   end
 
-  defp commands({subcommand, %_{args: %{infile: nil}} = params}) do
-    commands({subcommand, %{params | args: %{infile: @default_file}}})
+  defp commands({subcommand, %_{args: %{infile: nil}} = params}, rawargs) do
+    commands({subcommand, %{params | args: %{infile: @default_file}}}, rawargs)
   end
 
-  defp commands({[:clean], %_{args: %{infile: lambdapad_file}}}) do
+  defp commands({[:clean], %_{args: %{infile: lambdapad_file}}}, rawargs) do
     workdir = cwd!(lambdapad_file)
 
     gt = print_level1("Reading configuration", lambdapad_file)
 
     t = print_level2("Compiling", lambdapad_file)
-    [{mod, _}] = Code.compile_file(lambdapad_file)
+    {:ok, mod} = compile(lambdapad_file)
     print_level2_ok()
 
-    {:ok, config} = Config.init(mod.config(), workdir)
+    {:ok, config} = Config.init(get_config(mod, rawargs), workdir)
     print_level2_ok()
     print_level1_ok(t)
 
@@ -101,11 +126,11 @@ defmodule Lambdapad.Cli do
     :ok
   end
 
-  defp commands({[:http], %_{args: %{infile: lambdapad_file}, options: %{port: port}} = params}) do
+  defp commands({[:http], %_{args: %{infile: lambdapad_file}, options: %{port: port}} = params}, rawargs) do
     workdir = cwd!(lambdapad_file)
 
-    [{mod, _}] = Code.compile_file(lambdapad_file)
-    {:ok, config} = Config.init(mod.config(), workdir)
+    {:ok, mod} = compile(lambdapad_file)
+    {:ok, config} = Config.init(get_config(mod, rawargs), workdir)
 
     dir = Path.join([workdir, config["blog"]["output_dir"] || "site"])
     port = port || config["http"]["port"] || @default_port
@@ -113,12 +138,12 @@ defmodule Lambdapad.Cli do
     Http.start_server(port, dir)
     IO.puts([IO.ANSI.green(), "options", IO.ANSI.reset(), ": [q]uit or [r]ecompile"])
     if IO.gets("") == "r\n" do
-      commands(%{params | options: %{}, flags: %{verbosity: @default_verbosity}})
-      commands({[:http], params})
+      commands(%{params | options: %{}, flags: %{verbosity: @default_verbosity}}, rawargs)
+      commands({[:http], params}, rawargs)
     end
   end
 
-  defp commands({[:new, :list], _}) do
+  defp commands({[:new, :list], _}, _rawargs) do
     IO.write("Available templates: ")
 
     list_templates()
@@ -126,7 +151,7 @@ defmodule Lambdapad.Cli do
     |> IO.puts()
   end
 
-  defp commands({[:new], %_{args: %{name: name}, options: %{template: template}, flags: %{verbosity: loglevel}}}) do
+  defp commands({[:new], %_{args: %{name: name}, options: %{template: template}, flags: %{verbosity: loglevel}}}, _rawargs) do
     if File.exists?(name) do
       IO.puts([IO.ANSI.red(), "error", IO.ANSI.reset(), ": cannot create #{name} directory."])
       System.halt(1)

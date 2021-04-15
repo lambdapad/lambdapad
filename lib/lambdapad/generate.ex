@@ -1,5 +1,5 @@
 defmodule Lambdapad.Generate do
-  alias Lambdapad.Config
+  alias Lambdapad.{Cli, Config}
 
   def resolve_uri(config, name, funct_or_uri, vars, index \\ nil)
 
@@ -58,7 +58,7 @@ defmodule Lambdapad.Generate do
     |> Enum.reverse()
     |> Enum.reduce(fn posts, _config -> posts end, fn
       (trans_item, chained_fun) when is_binary(trans_item) ->
-        case mod.transform(trans_item) do
+        case Cli.apply_transform(mod, trans_item) do
           %{on: :item, run: trans_function} ->
             fn posts, config ->
               trans_function.(posts, config)
@@ -80,7 +80,7 @@ defmodule Lambdapad.Generate do
     end)
   end
   def resolve_transforms_on_item(mod, %{transform_on_item: trans_items}) when is_binary(trans_items) do
-    case mod.transform(trans_items) do
+    case Cli.apply_transform(mod, trans_items) do
       %{on: :item, run: trans_function} ->
         trans_function
 
@@ -101,7 +101,7 @@ defmodule Lambdapad.Generate do
     |> Enum.reverse()
     |> Enum.reduce(fn posts, _config -> posts end, fn
       (trans_page, chained_fun) when is_binary(trans_page) ->
-        case mod.transform(trans_page) do
+        case Cli.apply_transform(mod, trans_page) do
           %{on: :page, run: trans_function} ->
             fn posts, config ->
               trans_function.(posts, config)
@@ -123,7 +123,7 @@ defmodule Lambdapad.Generate do
     end)
   end
   def resolve_transforms_on_page(mod, %{transform_on_page: trans_page}) when is_binary(trans_page) do
-    case mod.transform(trans_page) do
+    case Cli.apply_transform(mod, trans_page) do
       %{on: :page, run: trans_function} ->
         trans_function
 
@@ -144,7 +144,7 @@ defmodule Lambdapad.Generate do
     |> Enum.reverse()
     |> Enum.reduce(fn config, _posts -> config end, fn
       (trans_config, chained_fun) when is_binary(trans_config) ->
-        case mod.transform(trans_config) do
+        case Cli.apply_transform(mod, trans_config) do
           %{on: :config, run: trans_function} ->
             fn config, posts ->
               trans_function.(config, posts)
@@ -166,7 +166,7 @@ defmodule Lambdapad.Generate do
     end)
   end
   def resolve_transforms_on_config(mod, %{transform_on_config: trans_config}) when is_binary(trans_config) do
-    case mod.transform(trans_config) do
+    case Cli.apply_transform(mod, trans_config) do
       %{on: :config, run: trans_function} ->
         trans_function
 

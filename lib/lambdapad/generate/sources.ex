@@ -9,19 +9,22 @@ defmodule Lambdapad.Generate.Sources do
     :ok
   end
 
-  def get_files(%{from: nil}, _workdir), do: nil
-  def get_files(%{from: source} = page_data, workdir) do
-    if data = Pockets.get(@table, source) do
-      data
-    else
-      data =
-        Path.join(workdir, source)
-        |> Path.wildcard()
-        |> Enum.map(&get_file(&1, page_data[:headers], page_data[:excerpt]))
+  def terminate() do
+    Pockets.close(@table)
+  end
 
-      Pockets.put(@table, source, data)
-      data
-    end
+  def get_files(%{from: nil}, _workdir), do: nil
+  def get_files(%{from: source, cache: false} = page_data, workdir) do
+    data =
+      Path.join(workdir, source)
+      |> Path.wildcard()
+      |> Enum.map(&get_file(&1, page_data[:headers], page_data[:excerpt]))
+
+    Pockets.put(@table, source, data)
+    data
+  end
+  def get_files(%{from: source} = page_data, workdir) do
+    Pockets.get(@table, source) || get_files(Map.put(page_data, :cache, false), workdir)
   end
 
   def get_file(file, has_headers?, has_excerpt?) when is_boolean(has_headers?) and is_boolean(has_excerpt?) do

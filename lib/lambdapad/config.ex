@@ -13,28 +13,72 @@ defmodule Lambdapad.Config do
     }
   end
 
+  def init(configs, workdir) when is_list(configs) do
+    Enum.reduce(configs, {:ok, %{}}, fn(config, {:ok, acc}) ->
+      {:ok, cfg} = init(config, workdir)
+      {:ok, Map.merge(acc, cfg)}
+    end)
+  end
+
   def init(%{format: "toml", from: file} = config, workdir) do
-    Cli.print_level2("Parsing", file)
+    Cli.print_level2("Parsing (TOML)", file)
     case Toml.decode_file(Path.join([workdir, file])) do
       {:ok, config_data} ->
-        config_data = Map.put(config_data, "workdir", workdir)
-        transform = config[:transform]
-        config_data =
-          if is_function(transform, 1) do
-            transform.(config_data)
-          else
-            config_data
-          end
-          |> Map.merge(lambdapad_metainfo())
-
+        config_data = process_data(config_data, config, workdir)
         Cli.print_level2_ok()
-        {:ok, config_data}
+        if var_name = config[:var_name] do
+          {:ok, %{var_name => config_data}}
+        else
+          {:ok, config_data}
+        end
 
-      error ->
-        Cli.print_error("#{inspect(error)}")
+      {:error, error} ->
+        Cli.print_error("reading #{file}: #{inspect(error)}")
         System.halt(1)
     end
   end
+
+  def init(%{format: "eterm", from: file} = config, workdir) do
+    Cli.print_level2("Parsing (Erlang)", file)
+    case :file.script(Path.join([workdir, file])) do
+      {:ok, config_data} when is_map(config_data) ->
+        config_data = process_data(config_data, config, workdir)
+        Cli.print_level2_ok()
+        if var_name = config[:var_name] do
+          {:ok, %{var_name => config_data}}
+        else
+          {:ok, config_data}
+        end
+
+      {:ok, config_data} ->
+        Cli.print_error("config data MUST be a map. Getting: #{inspect(config_data)}")
+        System.halt(1)
+
+      {:error, error} ->
+        Cli.print_error("reading #{file}: #{inspect(error)}")
+        System.halt(1)
+    end
+  end
+
+  defp process_data(config_data, %{transform: transform}, workdir) when is_function(transform, 1) do
+    config_data
+    |> Map.put("workdir", workdir)
+    |> transform.()
+    |> string_keys()
+    |> Map.merge(lambdapad_metainfo())
+  end
+
+  defp process_data(config_data, _config, workdir) do
+    config_data
+    |> Map.put("workdir", workdir)
+    |> string_keys()
+    |> Map.merge(lambdapad_metainfo())
+  end
+
+  defp string_keys(map) when is_map(map) do
+    for {key, value} <- map, into: %{}, do: {to_string(key), string_keys(value)}
+  end
+  defp string_keys(other), do: other
 
   def to_proplist(%Date{day: day, month: month, year: year}) do
     [
