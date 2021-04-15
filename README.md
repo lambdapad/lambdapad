@@ -2,7 +2,7 @@
 
 ![lambdapad](lambdapad.png)
 
-Static website generator using Elixir. Yes, it's using (syntactic) *sugar* to make *swetter* your experience!
+Static website generator using Elixir or Erlang. Yes! you can use (syntactic) *sugar* to make *swetter* your experience or Erlang to power the functional way to build your pages!
 
 If you love this content and want we can generate more, you can support us:
 
@@ -25,13 +25,19 @@ Then you will have the `lpad` script ready. You can copy it to a place accesible
 
 When you are running `lpad`, this command searches for a `lambdapad.exs` file into the current directory. You can indicate where the file is located, even if you called it in another way:
 
-```elixir
+```
 lpad www/myblog/lambdapad.exs
+```
+
+Or if you are going to use the Erlang way:
+
+```
+lpad www/myblog/index.erl
 ```
 
 ## Configuration
 
-Everything is defined into `lambdapad.exs` and `config.toml`. Both are necessary into your directory. The usual content for `config.toml` is as follows:
+Everything is defined into two different files. The first one is the script in use to define what's going to take place (i.e. `lambdapad.exs` or `index.erl`) and the other file is the configuration to get easier change parameters (i.e. `config.toml` or `blog.config`). Both are necessary into your directory. The usual content for `config.toml` is as follows:
 
 ```toml
 [blog]
@@ -41,6 +47,18 @@ description = "I put my ideas here... what else?"
 ```
 
 Actually, you can include more sections inside of this file which are going to be accesible from the templates and the transformations.
+
+If we want to use `eterm` then we could write it in this way:
+
+```erlang
+#{
+  url => "http://localhost:8080",
+  title => "My Blog",
+  description => "I put my ideas here... what else?"
+}
+```
+
+You can add as many deep levels as you need, but we recommend to keep it as simple as possible.
 
 You'll need also define information inside of `lambdapad.exs` to know what to generate:
 
@@ -67,6 +85,31 @@ blog do
 end
 ```
 
+Or using the Erlang format we can write the `index.erl` as follows:
+
+```erlang
+-module(index).
+
+config(_Args) ->
+  #{
+    blog => {eterm, "blog.config"}
+  }.
+
+pages(_Config) ->
+  #{
+    "/" => {
+      template_map, "posts.html",
+      {posts, "posts/**/*.md"},
+      #{}
+    },
+    "/{{ post.id }}" => {
+      template, "post.html",
+      {post, "posts/**/*.md"},
+      #{}
+    }
+  }.
+```
+
 Neat! More or less. There is a lot to comment, but first, there is a convention into the creation of the directories:
 
 - `posts`: where we put explicitly posts when we are to create a blog.
@@ -74,7 +117,29 @@ Neat! More or less. There is a lot to comment, but first, there is a convention 
 - `templates`: where we put the templates (usually ErlyDTL at the moment).
 - `assets`: where all of the static files should be placed. Be careful if you are using something like webpack, brunch or similar. This should be the destination directory for these tools and not the directory containing all of the generator and node modules directory.
 
-## Configuration Blocks
+In the same way the default file for the site it's usually `lambdapad.exs` and the configuration (if we are not indicating anything) it's `config.toml`.
+
+## Options
+
+As you can see, at the moment, you can choose between Elixir or Erlang. You can write the way your web site is going to be generated based on those two options. But we can also decide about:
+
+- **Templates**: we can write the templates using one of these options:
+  - `erlydtl` (default): it's using [ErlyDTL or Django Templates][DT].
+  - `eex`: using [EEx][EEx] library instead ([WIP](https://github.com/altenwald/lambdapad/discussions/3))
+  - `wordpress_theme`: yes! we could use Wordpres Themes to build the site ([WIP](https://github.com/altenwald/lambdapad/discussions/4))
+
+- **Configuration**: we can write extracts of data to be in use for our templates, transforms, etc. in these formats:
+  - `toml` (default): it's using [TOML][TOML]. Very powerful and simple.
+  - `eterm`: Erlang Terms, also easy if you are using the Erlang way.
+  - `yaml`: Sometimes it's difficult, sometimes it's easy, but well, you can check it out yourself ([WIP](https://github.com/altenwald/lambdapad/discussions/6)).
+  - `json`: Not good for humans but, hey! if you have a generated JSON, why not using it in the static web generator? ([WIP](https://github.com/altenwald/lambdapad/discussions/7))
+  - `markdown`: well, this is not a configuration system indeed, but it's a way to inject documents as variables to be in use into the templates when they are secondary ([WIP](https://github.com/altenwald/lambdapad/discussions/9))
+
+- **Script**: as we said from the very begining we are using Erlang and Elixir. I've no plans at the moment to increase the number of languages to write these scripts, but based on the languages available on top of BEAM, we could do something to integrate PHP, OCaml, Gleam, Lua, or another. If you want... no, if you really want to get any one of these working on Lambdapad, [open a discussion](https://github.com/altenwald/lambdapad/discussions).
+
+- **Documents**: when we are defining the documents which could be in use for generating pages, we are indicating mainly Markdown files. At this moment these are the only on document format supported and there is no intention to include more in near future. Markdown is ok.
+
+## Configuration Blocks (Elixir)
 
 We defined different blocks to be analysed and in use by lambdapad to generate the website. We are going to see them in detail right now.
 
@@ -212,6 +277,7 @@ The sets we can use for widgets are the following:
 - `excerpt` (boolean) is telling if the markdown files have excerpt or not. Even if they have no excerpt and we configure this value to `true` the code is getting the first paragraph as excerpt. Default value is `true`.
 - `var_name` (string | :plain) it's setting the list of pages using the name provided here to be in use into the template. The default value is `:plain`.
 - `format` (:erlydtl) yes, it makes no sense to put this value at the moment, but in near future it's desirable to have also support for other template engines like `:eex`. [Keep in touch!][EEx].
+- `env` (map) it's letting us to define extra parameters for the template in a map format (see pages example for further information).
 
 **Note** that if the `from` is retrieving different files, it will generate a list of elements which cannot be merge with the list of values, therefore `:plain` will be changed automatically to `"pages"` giving a warning.
 
@@ -293,6 +359,146 @@ The way the pages are rendered into the files depends on the configuration. But 
 4. The config is processed based on the pages (using `transform_on_config`). If there are no pages from step 1 this step is ommited.
 5. The page is rendered using the template and appliying the widgets.
 6. File is written using the render page.
+
+## Configuration functions (Erlang)
+
+If we choose to write our static site using Erlang, we have to create the module as `index.erl`. Indeed, the name could be changed, but I think `index.erl` it's a good name and it's not colliding with anything, but feel free to change it to `blog.erl` or whatever else.
+
+**Note** that it's not needed export functions, the compilation will do that for us.
+
+### `config/1`
+
+This function is optional. It's receiving the arguments we passed to `lpad` script. These are not needed strictly but it could be useful, just in case.
+
+The return of the function MUST be a map containing atoms as keys and tuples with two elements, or we can return a list of two elements tuples:
+
+```erlang
+-type kind() :: eterm | toml.
+-type filename() :: string().
+-spec config([string()]) -> #{ atom() => {kind(), filename()}} | [{kind(), filename()}].
+```
+
+An example:
+
+```erlang
+config(_Args) ->
+  #{
+    blog => {eterm, "blog.config"}
+  }.
+```
+
+This configuration is searching for `blog.config` file, opening it as Erlang Term file, parsing and putting the whole content into the `"blog"` key for the configuration result. If the content of the file is as follows:
+
+```erlang
+#{ url => "https://myblog.com/" }.
+```
+
+After retrieving the configuration we will have:
+
+```erlang
+#{
+  <<"blog">> => #{
+    <<"url">> => "https://myblog.com/"
+  }
+}
+```
+
+Of course, you can choose `toml` format and it's working in the same way.
+
+### `assets/1`
+
+This function is optional. It's accepting the configuration data as the only one parameter. We have to define the assets we want to copy in the following way:
+
+```erlang
+assets(_Config) ->
+  #{
+    files => {"assets/*.css", "site/css"}
+  }.
+```
+
+In the previous example, this is copying from the `assets` directory whatever file which have the `css` extension to the `site/css` directory. Easy, right? You can define as many entries as you need. By default the function is as follows:
+
+```erlang
+assets(_Config) ->
+  #{ general => {"assets/**", "site/"} }.
+```
+
+If that's good for you, you can avoid define this function.
+
+## `widgets/1`
+
+The definition of the widgets is similar to the definition of the pages. But they are not written into the disk so, they need to get a name. The specification for the data we could use is as follows:
+
+```erlang
+-type template() :: string().
+-type var_name() :: atom().
+-type from_files() :: string().
+-type extra_data() :: #{ atom() => term() }.
+
+-type widget_name() :: string().
+-type widget_content() ::
+  {
+    template | template_map,
+    template(),
+    {var_name(), from_files()},
+    extra_data()
+  }.
+
+-spec widgets(Config :: term()) -> #{ widget_name() => widget_content() }.
+```
+
+An implementation example could be checked here:
+
+```erlang
+widgets(_Config) ->
+  #{
+    "recent posts" => {
+      template, "recent-posts.html",
+      {posts, "posts/**/*.md"},
+      #{
+        env => #{
+          site_root => ?SITE_ROOT
+        }
+      }
+    }
+  }.
+```
+
+We are getting each entry from the map as the name (key) and the data (value). The data is a 4-element tuple which defines an action (`template` or `template_map`), a template file, a 2-element tuple defining the new entry into the data (for the template) where the files defined as the second element of the tuple are going to be available and finally extra data to be included into the definition.
+
+As we said, the `action` could be:
+- `template`: this is setting the `index` to `true` and retrieving all of the files in only one template. Only one file is going to be generated.
+- `template_map`: this is setting the `index` to `false` and generates a file for each file found with the wildcard parameter.
+
+The `template` (second parameter into the tuple) should be a valid file into the `templates` directory.
+
+The tuple composing `var_name` and `from` (files to match and use into the templates), are setting these parameters so, every file should be included into the template using the key `var_name` (it's working only with Markdown at the moment, it's not possible read other kind of files).
+
+And finally, the map where we could define the rest of configuration. The configuration is like we saw above into the configuration block for `pages`, you read it to get more information. As you can see into the example, we are using the `env` parameter but we could use others like `transform_on_page`, `transform_on_item` or `transform_on_config`.
+
+### `pages/1`
+
+This function is required. If the function isn't found into the module, it will trigger an error. The definition of the function is exactly the same as we saw previously for widgets:
+
+```erlang
+-type template() :: string().
+-type var_name() :: atom().
+-type from_files() :: string().
+-type extra_data() :: #{ atom() => term() }.
+
+-type page_name() :: string().
+-type page_content() ::
+  {
+    template | template_map,
+    template(),
+    {var_name(), from_files()},
+    extra_data()
+  }.
+
+-spec pages(Config :: term()) -> #{ page_name() => page_content() }.
+```
+
+Read the definition for the data into the previous section.
 
 ## Output Directory
 
@@ -422,6 +628,14 @@ This is reading the `lambdapad.exs` file and reading the generated files from th
 
 ```
 lpad http -p 8000 myblog/lambdapad.exs
+```
+
+## New (Templates)
+
+This feature is still experimental... more than the rest of the project, I mean. It's a way to generate the skeleton of a project in a fast way. It's using the blog sample at the moment to generate the new project. You can try:
+
+```
+lpad help new
 ```
 
 ## Contributing
