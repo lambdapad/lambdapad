@@ -25,7 +25,9 @@ widgets(_Config) ->
     }
   }.
 
-pages(_Config) ->
+pages(Config) ->
+  Blog = get_value("blog", Config),
+  Workdir = get_value("workdir", Blog),
   #{
     "/about" => {
       template, "index.html",
@@ -60,13 +62,19 @@ pages(_Config) ->
       #{
         env => #{
           site_root => ?SITE_ROOT,
-          example_file_content => get_current_file(),
+          example_file_content => get_current_file(Workdir),
           example_file => "index.erl"
         }
       }
     }
   }.
 
-get_current_file() ->
-  escript:script_name(),
-  ok.
+get_value(String, Config) when is_list(String) ->
+  get_value(list_to_binary(String), Config);
+get_value(Binary, Config) ->
+  maps:get(Binary, Config).
+
+get_current_file(Workdir) ->
+  Filename = iolist_to_binary([Workdir, "/index.erl"]),
+  {ok, Content} = file:read_file(Filename),
+  Content.
