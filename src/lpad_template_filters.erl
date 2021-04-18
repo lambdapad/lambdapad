@@ -16,9 +16,10 @@
 
 -export([read_file/1, read_file/2,
          filename/1, basename/1,
-         markdown_to_html/1,
+         markdown_to_html/1, strip_p/1,
          markdown_to_text/1,
-         render/1,
+         unwrap/1,
+         render/1, render/2,
          sort/1, sortasc/1, sortdesc/1,
          sort/2, sortasc/2, sortdesc/2,
          nsort/1, nsortasc/1, nsortdesc/1,
@@ -117,7 +118,18 @@ maybe_basename(Path) ->
 %%%-------------------------------------------------------------------
 
 render(undefined) -> "";
-render(Context) -> lpad_template:render_string(Context, []).
+render(Context) -> render_term(Context, []).
+
+render(undefined, []) -> "";
+render(Context, Vars) -> render_term(Context, Vars).
+
+render_term(Term, Vars) ->
+    render_resolved_term(lpad_util:file_or_string(Term), Vars).
+
+render_resolved_term({file, File}, Vars) ->
+    lpad_template:render(File, Vars);
+render_resolved_term({string, Str}, Vars) ->
+    lpad_template:render_string(Str, Vars).
 
 %%%-------------------------------------------------------------------
 %%% markdown_to_text
@@ -132,6 +144,26 @@ markdown_to_text(Context) -> lpad_markdown:to_text(Context).
 
 markdown_to_html(undefined) -> "";
 markdown_to_html(Context) -> lpad_markdown:to_html(Context).
+
+%%%-------------------------------------------------------------------
+%%% strip_p
+%%%-------------------------------------------------------------------
+
+strip_p(S) ->
+    Opts = [{capture, all_but_first, binary}, dotall],
+    case re:run(S, "<p>(.*)</p>", Opts) of
+        {match, Stripped} -> Stripped;
+        nomatch -> S
+    end.
+
+
+%%%-------------------------------------------------------------------
+%%% unwrap
+%%%-------------------------------------------------------------------
+
+unwrap(undefined) -> "";
+unwrap(S) ->
+    re:replace(S, "\n", " ", [global, {return, list}]).
 
 %%%-------------------------------------------------------------------
 %%% sort, sortasc, sortdesc
@@ -173,10 +205,10 @@ sort_val(Attr, Proplist) ->
 %%% nsort, nsortasc, nsortdesc
 %%%-------------------------------------------------------------------
 
-nsort(List) ->
+nsort(List) when is_list(List) ->
     nsortasc(List).
 
-nsort(List, Attr) ->
+nsort(List, Attr) when is_list(List) ->
     nsortasc(List, Attr).
 
 nsortasc(List) ->
@@ -257,7 +289,7 @@ existing_atom(Name) ->
         erlang:list_to_existing_atom(Name)
     catch
         _:badarg -> '$undefined'
-    end. 
+    end.
 
 apply_filter_op("=", Value, Value) -> true;
 apply_filter_op(Op, Value, Target) when is_atom(Value) ->

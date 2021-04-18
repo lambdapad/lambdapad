@@ -290,6 +290,109 @@ supporting an explicit `context` or `extra_data` attribute.
 For the time being, this feature will be implemented in `lpad_future` to
 experiment without forcing a big refactor of the generators.
 
+## Provide data context to filters
+
+It'd be nice to provide data to filter. A case here is where one data
+item references another. For example, a conference "talk" might
+contain a reference to the "speaker" giving the talk. A filter could
+be used to lookup a speaker for a given talk:
+
+```
+{% with speaker=talk|speaker_for_talk %}
+The speaker's name is {{speaker.name}}
+{% endwith %}
+```
+
+The filter though looks like this:
+
+```erlang
+speaker_for_talk(Talk) ->
+    SpeakerId = plist:value("speaker", Talk),
+    %% Now what? It'd be nice to have access to data here!
+    [].
+```
+
+The best case here is something like this:
+
+```erlang
+speaker_for_talk(Talk, Context) ->
+    SpeakerId = plist:value("speaker", Talk),
+    Data = plist:value(data, Context),
+    Speakers = plist:value(speakers, Data),
+    find_speaker(SpeakerId, Speakers).
+```
+
+However, the second argument is already designated as the string
+argument passed to the filter.
+
+One option here is to use lpad_session.
+
+The problem here is that we're now getting away from what makes using
+Erlang in the first place a Good Thing - functional
+patterns. lpad_session:root/0 is defensible as it's application
+context that's set initially and then unchanged. There's no race
+condition to worry about, etc. It's essentially global constant data.
+
+If we exposes 'data' through the session, we have a race to ensure
+that data is created before it's used. I'd rather not have to think
+about those sort of problems and I'd rather not introduce magic
+context, if it can be avoided.
+
+Another option is to support an arity-3 function. We'd need to hack or
+otherwise patch the current Erlydtl behavior to look for exported
+arity-3 functions and:
+
+- Always provide Context as the third arg
+- If an arg was provided to the filter, provide it as the second arg
+- If an arg was not provided to the filter, use the undefined atom as
+  the second arg
+
+I prefer this second form, though it does require that we break into
+the template framework.
+
+UPDATE: This request isn't needed. You can do this:
+
+```
+{% with speaker=talks|talks_for_speaker:speaker %}
+The speaker's name is {{speaker.name}}
+{% endwith %}
+```
+
+The filter though looks like this:
+
+```erlang
+speaker_for_talk(Talks, Speaker) ->
+    lists:filter(fun(Talk) -> is_speaker_talk(Talk, Speaker) end, Talks).
+
+This is right, the other thinking is wrong --- a filter in this case
+is transforming something, filtering it, etc. and not using it to
+lookup values from some global context.
+
+## Impossible to have multiple generators for the same target
+
+This is broken:
+
+```erlang
+site(Data) ->
+    #{
+      "site/images/" => {files, "speaker-images/*"},
+      "site/images/" => {files, "articles/*.{jpg,png,gif}"}
+     }.
+```
+
+As the map simply drops the previous entry.
+
+## Not handling unknown filters gracefully
+
+Lpad says something like this:
+
+```
+=== TEMPLATE COMPILE ERROR ===
+{unknown_filter,speaker_for_slot,2}
+```
+
+Little help - maybe a file and a line number?
+
 ## Acute Pain Points (Garrett, July 15 2015)
 
 - The error messages from LambdaPad are absurdly bad - any error
@@ -306,4 +409,16 @@ experiment without forcing a big refactor of the generators.
   like, "hey, this is Erlang so it's going to be super hard and take
   forever, but I'll have this smug sense of accomplishment in the end"
 
+- Less of an issue, but at this point a raging deficiency is the use
+  of proplists internally rather than maps. The most annoying part of
+  this is that the data is presented as a proplist to template
+  handlers - incredibly wrong! (Update: the current behavior is driven
+  by our use of an old pre-map version of Erlydtl!)
+
 Lot of work here, but doable.
+
+## Directory of config files
+
+We should support a list of items defined by config files in a
+directory - in the same way we support items defined in markdown
+files.
