@@ -246,6 +246,18 @@ The sets we can use to define a transform are:
   end
   ```
 
+  - `:persist`: a function receiving data as first parameter and page data as second parameter, it should return the modification of the data. This data will be inserted into `:url_data` property list using the URL as key. It's a way to get the list of the generated pages at some specific point (i.e. it's useful for the definition of a `pages` block to create a `sitemap.xml`):
+
+  ```elixir
+  transform "sitemap" do
+    set on: :persist
+    set run: fn(data, _page) ->
+      date = Date.utc_today() |> to_string()
+      Map.merge(data, %{"last_updated", date})
+    end
+  end
+  ```
+
   The transformation is modifying each post providing a new key `_date` which is containing the keys `day`, `month` and `year`.
 
 As you can see every transformation requieres a different function defined. It's accepting different parameters and returning different results.
@@ -338,7 +350,8 @@ The sets we can use with `pages` are the following:
 - `template` (string) the name of the template file in use for rendering the widget.
 - `transform_on_config` (function | string | list(function | string)) a lambda with two arguments saying what transformation we want to perform on the set of pages. We can use `transform` block to define a tranformation and use only the name here. We can add as many transformations as we need. See `transform` section for further information.
 - `transform_on_page` (function | string | list(function | string)) a lambda with two arguments saying what transformation we want to perform on the set of pages. We can use `transform` block to define a tranformation and use only the name here. We can add as many transformations as we need. See `transform` section for further information.
-- `transform_on_item` (function | string | list(function | strings)) a lambda with two arguments saying what transformation we want to perform on a single page each time. This is running once per item into the set of pages retrieved using `from`. We can add as many transformations as we need. See `transform` section for further information.
+- `transform_on_item` (function | string | list(function | string)) a lambda with two arguments saying what transformation we want to perform on a single page each time. This is running once per item into the set of pages retrieved using `from`. We can add as many transformations as we need. See `transform` section for further information.
+- `transform_to_persist` (function | string | list(function | string)) a lambda with two arguments saying what information should be persisted for the URL generated. The information will be retrieved for the following pages into the *config* under `url_data` using the URL as key and the persisted data as value.
 - `headers` (boolean) is telling if the markdown files have headers or not. Default value is `true`.
 - `excerpt` (boolean) is telling if the markdown files have excerpt or not. Even if they have no excerpt and we configure this value to `true` the code is getting the first paragraph as excerpt. Default value is `true`.
 - `var_name` (string | :plain) it's setting the list of pages using the name provided here to be in use into the template. The default value is `:plain`.
@@ -359,6 +372,7 @@ The way the pages are rendered into the files depends on the configuration. But 
 4. The config is processed based on the pages (using `transform_on_config`). If there are no pages from step 1 this step is ommited.
 5. The page is rendered using the template and appliying the widgets.
 6. File is written using the render page.
+7. The page data is processed by the `transform_to_persist` function and modify the configuration for the specific URL. If the `pages` generates several files, then several URLs are going to be saved into the `url_data` configuration.
 
 ## Configuration functions (Erlang)
 

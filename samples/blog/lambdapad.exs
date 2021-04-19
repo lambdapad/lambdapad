@@ -21,11 +21,35 @@ blog do
     set var_name: "posts"
   end
 
+  transform "sitemap" do
+    set on: :persist
+    set run: fn(_data, page) ->
+      page = Map.new(page)
+      %{"last_update" => page["updated"] || page["date"]}
+      page
+    end
+  end
+
+  pages "sitemap" do
+    set template: "sitemap.xml"
+    set uri: "/sitemap.xml"
+    set uri_type: :file
+  end
+
   pages "index" do
     set from: "snippets/about.md"
     set template: "index.html"
     set uri: "/"
     set var_name: "about"
+    set transform_to_persist: fn(data, page) ->
+      page =
+        page
+        |> Map.new()
+        |> Access.get("about")
+        |> Map.new()
+
+      Map.merge(data, %{"last_update" => page["date"]})
+    end
   end
 
   pages "posts index" do
@@ -34,6 +58,20 @@ blog do
     set uri: "/posts"
     set index: true
     set var_name: "posts"
+    set transform_to_persist: fn(data, page) ->
+      date =
+        page
+        |> Map.new()
+        |> Access.get("posts")
+        |> Enum.map(fn post ->
+          post = Map.new(post)
+          post["date"]
+        end)
+        |> Enum.sort(:desc)
+        |> List.first()
+
+      Map.merge(data, %{"last_update" => date})
+    end
   end
 
   pages "posts" do
@@ -41,6 +79,15 @@ blog do
     set template: "post.html"
     set uri: "/posts/{{post.id}}"
     set var_name: "post"
+    set transform_to_persist: fn(data, page) ->
+      post =
+        page
+        |> Map.new()
+        |> Access.get("post")
+        |> Map.new()
+
+      Map.merge(data, %{"last_update" => post["date"]})
+    end
   end
 
   pages "examples" do
@@ -50,5 +97,9 @@ blog do
       "example_file_content" => File.read!(Path.join([__DIR__, "lambdapad.exs"])),
       "example_file" => "lambdapad.exs"
     }
+    set transform_to_persist: fn(data, _page) ->
+      date = Date.utc_today() |> to_string()
+      Map.merge(data, %{"last_update" => date})
+    end
   end
 end

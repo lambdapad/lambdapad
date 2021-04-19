@@ -65,8 +65,8 @@ defmodule Lambdapad.Generate do
               |> chained_fun.(config)
             end
 
-          %{on: other} when other in [:page, :config] ->
-            raise "transforms config, page and item cannot be swapped"
+          %{on: other} when other in [:page, :config, :persist] ->
+            raise "transforms persist, config, page and item cannot be swapped"
 
           error ->
             raise "transform #{inspect(trans_item)} unknown: #{inspect(error)}"
@@ -84,8 +84,8 @@ defmodule Lambdapad.Generate do
       %{on: :item, run: trans_function} ->
         trans_function
 
-      %{on: other} when other in [:page, :config] ->
-        raise "transforms config, page and item cannot be swapped"
+      %{on: other} when other in [:page, :config, :persist] ->
+        raise "transforms persist, config, page and item cannot be swapped"
 
       error ->
         raise "transform #{inspect(trans_items)} unknown: #{inspect(error)}"
@@ -108,8 +108,8 @@ defmodule Lambdapad.Generate do
               |> chained_fun.(config)
             end
 
-          %{on: other} when other in [:item, :config] ->
-            raise "transforms config, page and item cannot be swapped"
+          %{on: other} when other in [:item, :config, :persist] ->
+            raise "transforms persist, config, page and item cannot be swapped"
 
           error ->
             raise "transform #{inspect(trans_page)} unknown: #{inspect(error)}"
@@ -127,8 +127,8 @@ defmodule Lambdapad.Generate do
       %{on: :page, run: trans_function} ->
         trans_function
 
-      %{on: other} when other in [:item, :config] ->
-        raise "transforms config, page and item cannot be swapped"
+      %{on: other} when other in [:item, :config, :persist] ->
+        raise "transforms persist, config, page and item cannot be swapped"
 
       error ->
         raise "transform #{inspect(trans_page)} unknown: #{inspect(error)}"
@@ -151,8 +151,8 @@ defmodule Lambdapad.Generate do
               |> chained_fun.(posts)
             end
 
-          %{on: other} when other in [:item, :page] ->
-            raise "transforms config, page and item cannot be swapped"
+          %{on: other} when other in [:item, :page, :persist] ->
+            raise "transforms persist, config, page and item cannot be swapped"
 
           error ->
             raise "transform #{inspect(trans_config)} unknown: #{inspect(error)}"
@@ -170,8 +170,8 @@ defmodule Lambdapad.Generate do
       %{on: :config, run: trans_function} ->
         trans_function
 
-      %{on: other} when other in [:item, :page] ->
-        raise "transforms config, page and item cannot be swapped"
+      %{on: other} when other in [:item, :page, :persist] ->
+        raise "transforms persist, config, page and item cannot be swapped"
 
       error ->
         raise "transform #{inspect(trans_config)} unknown: #{inspect(error)}"
@@ -181,4 +181,47 @@ defmodule Lambdapad.Generate do
     trans_config
   end
   def resolve_transforms_on_config(_mod, %{}), do: nil
+
+  def resolve_transforms_to_persist(mod, %{transform_to_persist: trans_persist}) when is_list(trans_persist) do
+    trans_persist
+    |> Enum.reverse()
+    |> Enum.reduce(fn config, _posts -> config end, fn
+      (trans_persist, chained_fun) when is_binary(trans_persist) ->
+        case Cli.apply_transform(mod, trans_persist) do
+          %{on: :persist, run: trans_function} ->
+            fn config, posts ->
+              trans_function.(config, posts)
+              |> chained_fun.(posts)
+            end
+
+          %{on: other} when other in [:item, :page, :config] ->
+            raise "transforms persist, config, page and item cannot be swapped"
+
+          error ->
+            raise "transform #{inspect(trans_persist)} unknown: #{inspect(error)}"
+        end
+
+      (trans_persist, chained_fun) when is_function(trans_persist) ->
+        fn config, posts ->
+          trans_persist.(config, posts)
+          |> chained_fun.(posts)
+        end
+    end)
+  end
+  def resolve_transforms_to_persist(mod, %{transform_to_persist: trans_persist}) when is_binary(trans_persist) do
+    case Cli.apply_transform(mod, trans_persist) do
+      %{on: :persist, run: trans_function} ->
+        trans_function
+
+      %{on: other} when other in [:item, :page, :config] ->
+        raise "transforms persist, config, page and item cannot be swapped"
+
+      error ->
+        raise "transform #{inspect(trans_persist)} unknown: #{inspect(error)}"
+    end
+  end
+  def resolve_transforms_to_persist(_mod, %{transform_to_persist: trans_persist}) when is_function(trans_persist) do
+    trans_persist
+  end
+  def resolve_transforms_to_persist(_mod, %{}), do: nil
 end

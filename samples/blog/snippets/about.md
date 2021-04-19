@@ -1,5 +1,6 @@
 title: About
 author: Garrett Smith
+date: 2021-04-19
 
 LambdaPad is static site generator written in Erlang. You might think that
 sounds crazy, because you think everything cool should be written in Go,
