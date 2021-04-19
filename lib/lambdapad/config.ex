@@ -13,6 +13,8 @@ defmodule Lambdapad.Config do
     }
   end
 
+  def valid_configs(), do: ~w[ toml eterm ]a
+
   def init(configs, workdir) when is_list(configs) do
     Enum.reduce(configs, {:ok, %{}}, fn(config, {:ok, acc}) ->
       {:ok, cfg} = init(config, workdir)
@@ -20,7 +22,7 @@ defmodule Lambdapad.Config do
     end)
   end
 
-  def init(%{format: "toml", from: file} = config, workdir) do
+  def init(%{format: :toml, from: file} = config, workdir) do
     Cli.print_level2("Parsing (TOML)", file)
     case Toml.decode_file(Path.join([workdir, file])) do
       {:ok, config_data} ->
@@ -38,7 +40,7 @@ defmodule Lambdapad.Config do
     end
   end
 
-  def init(%{format: "eterm", from: file} = config, workdir) do
+  def init(%{format: :eterm, from: file} = config, workdir) do
     Cli.print_level2("Parsing (Erlang)", file)
     case :file.script(Path.join([workdir, file])) do
       {:ok, config_data} when is_map(config_data) ->

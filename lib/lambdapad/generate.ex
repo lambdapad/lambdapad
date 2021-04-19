@@ -13,7 +13,7 @@ defmodule Lambdapad.Generate do
       {:ok, _uri_mod} = :erlydtl.compile_template(uri, uri_mod)
     end
     {:ok, iodata_uri} = uri_mod.render(vars)
-    Path.join([config["blog"]["url"], IO.iodata_to_binary(iodata_uri)])
+    Path.join([config["blog"]["url"] || "", IO.iodata_to_binary(iodata_uri)])
   end
 
   def process_vars(page_data, data, index \\ nil)

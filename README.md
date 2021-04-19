@@ -148,7 +148,7 @@ We defined different blocks to be analysed and in use by lambdapad to generate t
 The `config` block is only needed if we want to change the provider (one instead of [TOML][TOML]), the name of the configuration file or we want to perform a change into the configuration. The sets we can configure are the following:
 
 - `from` (string) set the name of the configuration file, by default it's `config.toml`.
-- `format` (string) set the type of the configuration file. At this moment we can only use `toml`.
+- `format` (atom) set the type of the configuration file. At this moment we can only use `:toml`.
 - `transform` (function) let us set a function to change the configuration. It is only running once when we retrieve the configuration from the file and we can only define one function:
 
 ```elixir

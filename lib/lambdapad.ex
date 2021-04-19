@@ -8,6 +8,7 @@ defmodule Lambdapad do
         use Lambdapad
 
         @content nil
+        Module.register_attribute(Lambdapad.Blog, :configs, accumulate: true)
         Module.register_attribute(Lambdapad.Blog, :source, accumulate: true)
         Module.register_attribute(Lambdapad.Blog, :transforms, accumulate: true)
         Module.register_attribute(Lambdapad.Blog, :widgets, accumulate: true)
@@ -16,6 +17,11 @@ defmodule Lambdapad do
         unquote(block)
 
         def sources(), do: @source
+
+        def configs() do
+          for name <- @configs, do: __MODULE__.config(name)
+        end
+
         def transforms() do
           for name <- @transforms, into: %{} do
             {name, transform(name)}
@@ -43,9 +49,9 @@ defmodule Lambdapad do
 
   defmacro __using__(_opts) do
     quote do
-      def config() do
+      def config("default") do
         %{
-          format: "toml",
+          format: :toml,
           from: "config.toml",
           transform_from_pages: nil
         }
@@ -100,8 +106,16 @@ defmodule Lambdapad do
         }
       end
 
+      defp config_default() do
+        %{
+          format: :toml,
+          from: "config.toml",
+          transform_from_pages: nil
+        }
+      end
+
       defoverridable [
-        config: 0,
+        config: 1,
         assets: 1,
         sources: 0,
         transform: 1,
@@ -111,14 +125,13 @@ defmodule Lambdapad do
     end
   end
 
-  defmacro config(do: block) do
+  defmacro config(name \\ "default", do: block) do
     quote do
       Module.put_attribute(__MODULE__, :content, :config)
-      def config() do
-        default_conf = super()
+      Module.put_attribute(__MODULE__, :configs, unquote(name))
+      def config(unquote(name)) do
         var!(conf, Lambdapad.Blog) = %{}
-        new_conf = unquote(block)
-        Map.merge(default_conf, new_conf)
+        Map.merge(config_default(), unquote(block))
       end
       Module.put_attribute(__MODULE__, :content, nil)
     end

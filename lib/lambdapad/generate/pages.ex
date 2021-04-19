@@ -53,7 +53,7 @@ defmodule Lambdapad.Generate.Pages do
 
   defp generate_pages(nil, config, name, page_data, output_dir, render_mod) do
     plist_config = Config.to_proplist(config)
-    env_data = Enum.to_list(page_data[:env])
+    env_data = Enum.to_list(page_data[:env] || [])
     env = plist_config ++ env_data
     url = Generate.resolve_uri(config, name, page_data[:uri], env)
     file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
@@ -66,7 +66,7 @@ defmodule Lambdapad.Generate.Pages do
   defp generate_pages(pages, config, name, %{index: true, paginated: false} = page_data, output_dir, render_mod) do
     plist_config = Config.to_proplist(config)
     vars = Generate.process_vars(page_data, pages)
-    env_data = Enum.to_list(page_data[:env])
+    env_data = Enum.to_list(page_data[:env] || [])
     url = Generate.resolve_uri(config, name, page_data[:uri], vars ++ env_data)
     file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
     relative_file = String.replace_prefix(file, output_dir, "")
@@ -88,7 +88,7 @@ defmodule Lambdapad.Generate.Pages do
     Enum.each(1..total_pages, fn index ->
       pager = get_pager(index, total_pages, pager_data)
       vars = pager_data[index][:vars]
-      env_data = Enum.to_list(page_data[:env])
+      env_data = Enum.to_list(page_data[:env] || [])
       url = pager_data[index][:url]
       file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
       relative_file = String.replace_prefix(file, output_dir, "")
@@ -103,7 +103,7 @@ defmodule Lambdapad.Generate.Pages do
     Enum.each(pages, fn
       {index, data} ->
         vars = Generate.process_vars(page_data, data, index)
-        env_data = Enum.to_list(page_data[:env])
+        env_data = Enum.to_list(page_data[:env] || [])
         url = Generate.resolve_uri(config, name, page_data[:uri], vars ++ env_data, index)
         file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
         relative_file = String.replace_prefix(file, output_dir, "")
@@ -114,7 +114,7 @@ defmodule Lambdapad.Generate.Pages do
 
       data when is_map(data) ->
         vars = Generate.process_vars(page_data, data)
-        env_data = Enum.to_list(page_data[:env])
+        env_data = Enum.to_list(page_data[:env] || [])
         url = Generate.resolve_uri(config, name, page_data[:uri], vars ++ env_data)
         file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
         relative_file = String.replace_prefix(file, output_dir, "")

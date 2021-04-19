@@ -25,7 +25,7 @@ defmodule Lambdapad.Cli do
     |> commands(args)
   end
 
-  def get_config({calling_mod, _} = mod, rawargs), do: calling_mod.get_config(mod, rawargs)
+  def get_configs({calling_mod, _} = mod, rawargs), do: calling_mod.get_configs(mod, rawargs)
 
   def get_widgets({calling_mod, _} = mod, config), do: calling_mod.get_widgets(mod, config)
 
@@ -66,7 +66,7 @@ defmodule Lambdapad.Cli do
     {:ok, mod} = compile(filename)
     print_level2_ok()
 
-    {:ok, config} = Config.init(get_config(mod, rawargs), workdir)
+    {:ok, config} = Config.init(get_configs(mod, rawargs), workdir)
 
     print_level2("Create directory")
     relative_output_dir = config["blog"]["output_dir"] || "site"
@@ -108,7 +108,7 @@ defmodule Lambdapad.Cli do
     {:ok, mod} = compile(lambdapad_file)
     print_level2_ok()
 
-    {:ok, config} = Config.init(get_config(mod, rawargs), workdir)
+    {:ok, config} = Config.init(get_configs(mod, rawargs), workdir)
     print_level2_ok()
     print_level1_ok(t)
 
@@ -130,7 +130,7 @@ defmodule Lambdapad.Cli do
     workdir = cwd!(lambdapad_file)
 
     {:ok, mod} = compile(lambdapad_file)
-    {:ok, config} = Config.init(get_config(mod, rawargs), workdir)
+    {:ok, config} = Config.init(get_configs(mod, rawargs), workdir)
 
     dir = Path.join([workdir, config["blog"]["output_dir"] || "site"])
     port = port || config["http"]["port"] || @default_port

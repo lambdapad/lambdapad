@@ -9,13 +9,13 @@ defmodule Lambdapad.Cli.Erl do
     export_all
   ]a
 
-  @valid_configs ~w[ eterm toml ]a
+  @valid_configs Lambdapad.Config.valid_configs()
 
   def compile(index_file) do
     :code.purge(:index)
     case :compile.file(String.to_charlist(index_file), @compiler_opts) do
       {:ok, mod, []} ->
-        {:module, :index} = :code.load_file(mod)
+        {:module, ^mod} = :code.load_file(mod)
         {:ok, {__MODULE__, mod}}
 
       {:ok, mod, warns} ->
@@ -31,28 +31,37 @@ defmodule Lambdapad.Cli.Erl do
     end
   end
 
-  def get_config({__MODULE__, mod}, rawargs) do
+  def get_configs({__MODULE__, mod}, rawargs) do
     if function_exported?(mod, :config, 1) do
       for config <- mod.config(rawargs), do: translate_config(config)
     else
-      %{
-        format: "eterm",
+      [%{
+        format: :eterm,
         from: "lambdapad.config"
-      }
+      }]
     end
   end
 
   defp translate_config({key, {kind, file}}) when kind in @valid_configs do
-    %{format: to_string(kind), from: to_string(file), var_name: to_string(key)}
+    %{format: kind, from: to_string(file), var_name: to_string(key)}
   end
 
   defp translate_config({kind, file}) when kind in @valid_configs do
-    %{format: "eterm", from: to_string(file)}
+    %{format: :eterm, from: to_string(file)}
   end
 
   def get_widgets({__MODULE__, mod}, config) do
     if function_exported?(mod, :widgets, 1) do
-      for widget <- mod.widgets(config), into: %{}, do: translate_page_data(widget)
+      for widget <- mod.widgets(config), into: %{} do
+        {key, value} = translate_page_data(widget)
+        {
+          key,
+          value
+          |> Map.delete(:uri)
+          |> Map.delete(:uri_type)
+          |> Map.delete(:paginated)
+        }
+      end
     else
       %{}
     end

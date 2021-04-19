@@ -5,7 +5,7 @@ defmodule Lambdapad.Cli.Exs do
     {:ok, {__MODULE__, mod}}
   end
 
-  def get_config({__MODULE__, mod}, _rawargs), do: mod.config()
+  def get_configs({__MODULE__, mod}, _rawargs), do: mod.configs()
 
   def get_widgets({__MODULE__, mod}, _config), do: mod.widgets()
 
