@@ -53,8 +53,8 @@ defmodule Lambdapad.Generate.Pages do
     end
   end
 
-  defp process_transforms_to_persist(_mod, nil, _page_data), do: %{}
-  defp process_transforms_to_persist(mod, vars, page_data) do
+  defp process_transforms_to_persist(mod, %{} = vars, %{} = page_data) do
+    vars = Map.put(vars, "var_name", page_data[:var_name])
     if transforms = Generate.resolve_transforms_to_persist(mod, page_data) do
       transforms.(%{}, vars)
     else
@@ -62,7 +62,7 @@ defmodule Lambdapad.Generate.Pages do
     end
   end
 
-  defp generate_pages(nil, config, name, page_data, output_dir, render_mod, mod) do
+  defp generate_pages(nil, config, name, %{} = page_data, output_dir, render_mod, mod) do
     plist_config = Config.to_proplist(config)
     env_data = Enum.to_list(page_data[:env] || [])
     env = plist_config ++ env_data
@@ -86,7 +86,7 @@ defmodule Lambdapad.Generate.Pages do
     Cli.print_level3(relative_file)
     iodata = Html.render(vars ++ env_data, render_mod, plist_config)
     File.write!(file, iodata)
-    vars = [{"__file__", file}|vars]
+    vars = Map.new([{"__file__", file}|vars])
     url_data = process_transforms_to_persist(mod, vars, page_data)
     Map.update(config, :url_data, [{url, url_data}], &[{url, url_data}|&1])
   end
@@ -112,13 +112,13 @@ defmodule Lambdapad.Generate.Pages do
       plist_config = Config.to_proplist(config)
       iodata = Html.render(vars ++ pager ++ env_data, render_mod, plist_config)
       File.write!(file, iodata)
-      vars = [{"__file__", file}|vars]
+      vars = Map.new([{"__file__", file}|vars])
       url_data = process_transforms_to_persist(mod, vars, page_data)
       Map.update(cfg, :url_data, [{url, url_data}], &[{url, url_data}|&1])
     end)
   end
 
-  defp generate_pages(pages, config, name, page_data, output_dir, render_mod, mod) do
+  defp generate_pages(pages, config, name, %{} = page_data, output_dir, render_mod, mod) do
     Enum.reduce(pages, config, fn
       {index, data}, cfg ->
         vars = Generate.process_vars(page_data, data, index)
@@ -130,7 +130,7 @@ defmodule Lambdapad.Generate.Pages do
         plist_config = Config.to_proplist(config)
         iodata = Html.render(vars ++ env_data, render_mod, plist_config)
         File.write!(file, iodata)
-        vars = [{"__file__", file}|vars]
+        vars = Map.new([{"__file__", file}|vars])
         url_data = process_transforms_to_persist(mod, vars, page_data)
         Map.update(cfg, :url_data, [{url, url_data}], &[{url, url_data}|&1])
 
@@ -144,7 +144,7 @@ defmodule Lambdapad.Generate.Pages do
         plist_config = Config.to_proplist(config)
         iodata = Html.render(vars ++ env_data, render_mod, plist_config)
         File.write!(file, iodata)
-        vars = [{"__file__", file}|vars]
+        vars = Map.new([{"__file__", file}|vars])
         url_data = process_transforms_to_persist(mod, vars, page_data)
         Map.update(cfg, :url_data, [{url, url_data}], &[{url, url_data}|&1])
     end)

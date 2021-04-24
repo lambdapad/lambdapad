@@ -27,16 +27,30 @@ defmodule Lambdapad do
             {name, transform(name)}
           end
         end
+
         def widgets() do
           for name <- @widgets, into: %{} do
             {name, widget(name)}
           end
         end
+
+        defp priority(:low), do: 100
+        defp priority(:high), do: 0
+        defp priority(_), do: 50
+
         def pages() do
-          for name <- @pages, into: %{} do
-            {name, pages(name)}
+          pages =
+            for name <- @pages do
+              {name, pages(name)}
+            end
+
+          if Enum.any?(pages, fn {_, data} -> not is_nil(data["priority"]) end) do
+            Enum.sort_by(pages, fn {key, data} -> priority(data["priority"]) end)
+          else
+            pages
           end
         end
+
         def assets() do
           assets = if @assets == [], do: ["general"], else: @assets
           for name <- assets, into: %{} do

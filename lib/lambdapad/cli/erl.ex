@@ -69,7 +69,7 @@ defmodule Lambdapad.Cli.Erl do
 
   def get_pages({__MODULE__, mod}, config) do
     if function_exported?(mod, :pages, 1) do
-      for page <- mod.pages(config), into: %{}, do: translate_page_data(page)
+      for page <- mod.pages(config), do: translate_page_data(page)
     else
       Cli.print_error("pages it's not defined into Erlang index.")
     end

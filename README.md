@@ -331,7 +331,7 @@ The sets we can use with `pages` are the following:
   end
   ```
 
-- `uri_type` (:dir | :file) the `uri` is always being created as a directory and inside a `index.html` file, but if we want to create specifically another file, i.e. `atom.xml`, we could specify the `uri` including the file and then setting `uri_type` as `:file`. Default value  is `:dir`.
+- `uri_type` (`:dir` | `:file`) the `uri` is always being created as a directory and inside a `index.html` file, but if we want to create specifically another file, i.e. `atom.xml`, we could specify the `uri` including the file and then setting `uri_type` as `:file`. Default value  is `:dir`.
 - `index` (boolean) we say if we are going to process all of the posts in only one template or one post per template. This is helping to create pages like indexes of posts or all of the post pages one by one.
 - `paginated` (false | integer | function) we are indicating if we are going to paginate a page defined as index (`set index: true`) we can set this value as `false` (the default value), the number of elements per page (positive integer):
 
@@ -354,8 +354,8 @@ The sets we can use with `pages` are the following:
 - `transform_to_persist` (function | string | list(function | string)) a lambda with two arguments saying what information should be persisted for the URL generated. The information will be retrieved for the following pages into the *config* under `url_data` using the URL as key and the persisted data as value.
 - `headers` (boolean) is telling if the markdown files have headers or not. Default value is `true`.
 - `excerpt` (boolean) is telling if the markdown files have excerpt or not. Even if they have no excerpt and we configure this value to `true` the code is getting the first paragraph as excerpt. Default value is `true`.
-- `var_name` (string | :plain) it's setting the list of pages using the name provided here to be in use into the template. The default value is `:plain`.
-- `format` (:erlydtl) yes, it makes no sense to put this value at the moment, but in near future it's desirable to have also support for other template engines like `:eex`. [Keep in touch!][EEx].
+- `var_name` (string | `:plain`) it's setting the list of pages using the name provided here to be in use into the template. The default value is `:plain`.
+- `format` (`:erlydtl`) yes, it makes no sense to put this value at the moment, but in near future it's desirable to have also support for other template engines like `:eex`. [Keep in touch!][EEx].
 - `env` (map) it's letting us to define extra parameters for the template in a map format:
 
   ```elixir
@@ -363,6 +363,8 @@ The sets we can use with `pages` are the following:
     "environment" => System.get_env("LPAD_ENV") || "dev"
   }
   ```
+
+- `priority` (`:high` | `:normal` | `:low`) indicates when the page will be generated. It's useful when we want to use `transform_to_persist` and generate `sitemaps` at the end of the generation of the blog.
 
 The way the pages are rendered into the files depends on the configuration. But mainly they follow these steps:
 
