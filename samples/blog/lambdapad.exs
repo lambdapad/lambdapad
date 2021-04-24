@@ -23,10 +23,9 @@ blog do
 
   transform "sitemap" do
     set on: :persist
-    set run: fn(_data, page) ->
+    set run: fn(data, page) ->
       page = Map.new(page)
-      %{"last_update" => page["updated"] || page["date"]}
-      page
+      Map.put(data, "last_update", page["updated"] || page["date"])
     end
   end
 
