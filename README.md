@@ -376,6 +376,43 @@ The way the pages are rendered into the files depends on the configuration. But 
 6. File is written using the render page.
 7. The page data is processed by the `transform_to_persist` function and modify the configuration for the specific URL. If the `pages` generates several files, then several URLs are going to be saved into the `url_data` configuration.
 
+### checks
+
+When we have to check if our website was correctly built we could inject some specific code which could help us to determine if that was right or not. A typical check we can perform is for broken links:
+
+```elixir
+  check "broken local links" do
+    set on: :finish
+    set run: fn(config) ->
+      urls = for {url, _} <- config[:url_data], do: URI.parse(url)
+      site_root = config["site_root"]
+      for link <- config[:links] do
+        if String.starts_with?(link, site_root) do
+          link =
+            if String.ends_with?(link, "index.html") do
+              String.replace_suffix(link, "/index.html", "")
+            else
+              link
+            end
+
+          unless URI.parse(link) in urls do
+            raise """
+            Broken link: #{link}
+            """
+          end
+        end
+      end
+      config
+    end
+  end
+```
+
+`:links` and `:url_data` are provided by Lambdapad. `:url_data` could be modified (its content) by `transform_to_persist` transformations (into every `page` block).
+
+The only option available at this moment for `on` is `:finish`. The `run` option only accepts a valid _closure_ (or anonymous function) which admits one parameter.
+
+You can perform whatever inside of the check and it's a good idea to return the config again because if you are using more than one check, it's going to run the following one based on the config you returned.
+
 ## Configuration functions (Erlang)
 
 If we choose to write our static site using Erlang, we have to create the module as `index.erl`. Indeed, the name could be changed, but I think `index.erl` it's a good name and it's not colliding with anything, but feel free to change it to `blog.erl` or whatever else.

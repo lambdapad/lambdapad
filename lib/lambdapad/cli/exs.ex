@@ -14,4 +14,6 @@ defmodule Lambdapad.Cli.Exs do
   def get_assets({__MODULE__, mod}, _config), do: mod.assets()
 
   def apply_transform({__MODULE__, mod}, items), do: mod.transform(items)
+
+  def get_checks({__MODULE__, mod}), do: mod.checks()
 end

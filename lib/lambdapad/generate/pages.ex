@@ -20,7 +20,9 @@ defmodule Lambdapad.Generate.Pages do
       chg_config = generate_pages(pages, chg_config, name, page_data, output_dir, render_mod, mod)
       Cli.print_level2_ok()
 
-      Map.put(config, :url_data, chg_config[:url_data])
+      config
+      |> Map.put(:url_data, chg_config[:url_data])
+      |> Map.put(:links, chg_config[:links])
     end)
   end
 
@@ -73,7 +75,11 @@ defmodule Lambdapad.Generate.Pages do
     iodata = Html.render(env_data, render_mod, plist_config)
     File.write!(file, iodata)
     url_data = process_transforms_to_persist(mod, %{"__file__" => file}, page_data)
-    Map.update(config, :url_data, [{url, url_data}], &[{url, url_data}|&1])
+    links = gather_links(iodata)
+
+    config
+    |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+    |> Map.update(:links, links, &MapSet.union(&1, links))
   end
 
   defp generate_pages(pages, config, name, %{index: true, paginated: false} = page_data, output_dir, render_mod, mod) do
@@ -88,7 +94,11 @@ defmodule Lambdapad.Generate.Pages do
     File.write!(file, iodata)
     vars = Map.new([{"__file__", file}|vars])
     url_data = process_transforms_to_persist(mod, vars, page_data)
-    Map.update(config, :url_data, [{url, url_data}], &[{url, url_data}|&1])
+    links = gather_links(iodata)
+
+    config
+    |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+    |> Map.update(:links, links, &MapSet.union(&1, links))
   end
 
   defp generate_pages(pages, config, name, %{index: true} = page_data, output_dir, render_mod, mod) do
@@ -114,7 +124,11 @@ defmodule Lambdapad.Generate.Pages do
       File.write!(file, iodata)
       vars = Map.new([{"__file__", file}|vars])
       url_data = process_transforms_to_persist(mod, vars, page_data)
-      Map.update(cfg, :url_data, [{url, url_data}], &[{url, url_data}|&1])
+      links = gather_links(iodata)
+
+      cfg
+      |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+      |> Map.update(:links, links, &MapSet.union(&1, links))
     end)
   end
 
@@ -132,7 +146,11 @@ defmodule Lambdapad.Generate.Pages do
         File.write!(file, iodata)
         vars = Map.new([{"__file__", file}|vars])
         url_data = process_transforms_to_persist(mod, vars, page_data)
-        Map.update(cfg, :url_data, [{url, url_data}], &[{url, url_data}|&1])
+        links = gather_links(iodata)
+
+        cfg
+        |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+        |> Map.update(:links, links, &MapSet.union(&1, links))
 
       data, cfg when is_map(data) ->
         vars = Generate.process_vars(page_data, data)
@@ -146,8 +164,21 @@ defmodule Lambdapad.Generate.Pages do
         File.write!(file, iodata)
         vars = Map.new([{"__file__", file}|vars])
         url_data = process_transforms_to_persist(mod, vars, page_data)
-        Map.update(cfg, :url_data, [{url, url_data}], &[{url, url_data}|&1])
+        links = gather_links(iodata)
+
+        cfg
+        |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+        |> Map.update(:links, links, &MapSet.union(&1, links))
     end)
+  end
+
+  defp gather_links(html) do
+    {:ok, document} = Floki.parse_document(html)
+    for {"a", attrs, _} <- Floki.find(document, "a"), not is_nil(List.keyfind(attrs, "href", 0)) do
+      {"href", link} = List.keyfind(attrs, "href", 0)
+      link
+    end
+    |> MapSet.new()
   end
 
   defp generate_pager_data(page_items, page_data, name, config) do

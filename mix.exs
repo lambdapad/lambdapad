@@ -6,7 +6,7 @@ defmodule Lambdapad.MixProject do
       name: "Lambdapad",
       description: "Static website generator",
       app: :lambdapad,
-      version: "0.4.1",
+      version: "0.5.0",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -36,7 +36,8 @@ defmodule Lambdapad.MixProject do
       {:pockets, "~> 1.0"},
       {:toml, "~> 0.6"},
       {:optimus, "~> 0.2"},
-      {:cowboy, "~> 2.8"}
+      {:cowboy, "~> 2.8"},
+      {:floki, "~> 0.30"}
     ]
   end
 end

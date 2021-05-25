@@ -35,6 +35,8 @@ defmodule Lambdapad.Cli do
 
   def apply_transform({calling_mod, _} = mod, items), do: calling_mod.apply_transform(mod, items)
 
+  def get_checks({calling_mod, _} = mod), do: calling_mod.get_checks(mod)
+
   defp compile(filename) do
     cond do
       String.ends_with?(filename, ".exs") ->
@@ -82,7 +84,11 @@ defmodule Lambdapad.Cli do
     print_level1_ok(t)
 
     t = print_level1("Processing pages")
-    Generate.Pages.process(get_pages(mod, config), config, mod, workdir, output_dir)
+    config = Generate.Pages.process(get_pages(mod, config), config, mod, workdir, output_dir)
+    print_level1_ok(t)
+
+    t = print_level1("Processing checks")
+    apply_finish_checks(get_checks(mod), config)
     print_level1_ok(t)
 
     t = print_level1("Processing assets")
@@ -179,6 +185,18 @@ defmodule Lambdapad.Cli do
     end)
     print_level2_ok()
     print_level1_ok(t)
+  end
+
+  defp apply_finish_checks(checks, config) do
+    Enum.reduce(checks, config, fn
+      {name, %{on: :finish, run: code}}, config ->
+        print_level2("Checking", name)
+        config = code.(config)
+        print_level2_ok()
+        config
+
+      _, config -> config
+    end)
   end
 
   Module.register_attribute(__MODULE__, :templates, accumulate: true)

@@ -7,6 +7,31 @@ blog do
     end
   end
 
+  check "broken local links" do
+    set on: :finish
+    set run: fn(config) ->
+      urls = for {url, _} <- config[:url_data], do: URI.parse(url)
+      site_root = config["site_root"]
+      for link <- config[:links] do
+        if String.starts_with?(link, site_root) do
+          link =
+            if String.ends_with?(link, "index.html") do
+              String.replace_suffix(link, "/index.html", "")
+            else
+              link
+            end
+
+          unless URI.parse(link) in urls do
+            raise """
+            Broken link: #{link}
+            """
+          end
+        end
+      end
+      config
+    end
+  end
+
   assets "css" do
     set from: "assets/*.css"
     set to: "site/css"
@@ -33,6 +58,7 @@ blog do
     set template: "sitemap.xml"
     set uri: "/sitemap.xml"
     set uri_type: :file
+    set priority: :low
   end
 
   pages "index" do

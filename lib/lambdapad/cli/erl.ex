@@ -168,4 +168,6 @@ defmodule Lambdapad.Cli.Erl do
   end
 
   def apply_transform({__MODULE__, _mod}, items), do: items
+
+  def get_checks({__MODULE__, _mod}), do: []
 end

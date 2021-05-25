@@ -11,6 +11,7 @@ defmodule Lambdapad do
         Module.register_attribute(Lambdapad.Blog, :configs, accumulate: true)
         Module.register_attribute(Lambdapad.Blog, :source, accumulate: true)
         Module.register_attribute(Lambdapad.Blog, :transforms, accumulate: true)
+        Module.register_attribute(Lambdapad.Blog, :checks, accumulate: true)
         Module.register_attribute(Lambdapad.Blog, :widgets, accumulate: true)
         Module.register_attribute(Lambdapad.Blog, :pages, accumulate: true)
         Module.register_attribute(Lambdapad.Blog, :assets, accumulate: true)
@@ -25,6 +26,12 @@ defmodule Lambdapad do
         def transforms() do
           for name <- @transforms, into: %{} do
             {name, transform(name)}
+          end
+        end
+
+        def checks() do
+          for name <- @checks, into: %{} do
+            {name, check(name)}
           end
         end
 
@@ -87,6 +94,8 @@ defmodule Lambdapad do
 
       def transform(_), do: nil
 
+      def check(_), do: nil
+
       def widget(_), do: nil
 
       def pages(_), do: nil
@@ -133,6 +142,7 @@ defmodule Lambdapad do
         assets: 1,
         sources: 0,
         transform: 1,
+        check: 1,
         widget: 1,
         pages: 1
       ]
@@ -156,6 +166,18 @@ defmodule Lambdapad do
       Module.put_attribute(__MODULE__, :content, :transforms)
       Module.put_attribute(__MODULE__, :transforms, unquote(name))
       def transform(unquote(name)) do
+        var!(conf, Lambdapad.Blog) = %{}
+        unquote(block)
+      end
+      Module.put_attribute(__MODULE__, :content, nil)
+    end
+  end
+
+  defmacro check(name, do: block) do
+    quote do
+      Module.put_attribute(__MODULE__, :content, :checks)
+      Module.put_attribute(__MODULE__, :checks, unquote(name))
+      def check(unquote(name)) do
         var!(conf, Lambdapad.Blog) = %{}
         unquote(block)
       end
@@ -227,6 +249,8 @@ defmodule Lambdapad do
         @content == :config ->
           Map.put(config, unquote(key), unquote(value))
         @content == :assets ->
+          Map.put(config, unquote(key), unquote(value))
+        @content == :checks ->
           Map.put(config, unquote(key), unquote(value))
         @content == :transforms ->
           Map.put(config, unquote(key), unquote(value))
