@@ -115,7 +115,7 @@ defmodule Lambdapad.Generate.Pages do
       pager = get_pager(index, total_pages, pager_data)
       vars = pager_data[index][:vars]
       env_data = Enum.to_list(page_data[:env] || [])
-      url = pager_data[index][:url]
+      url = Path.join(config["blog"]["url"] || "", pager_data[index][:url])
       file = Generate.build_file_abspath(output_dir, url, page_data[:uri_type])
       relative_file = String.replace_prefix(file, output_dir, "")
       Cli.print_level3(relative_file)
