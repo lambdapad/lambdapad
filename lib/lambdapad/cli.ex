@@ -19,6 +19,7 @@ defmodule Lambdapad.Cli do
     absname(Path.dirname(lambdapad_file))
   end
 
+  @spec main(any) :: none | :ok
   def main(args) do
     args
     |> parse_options()

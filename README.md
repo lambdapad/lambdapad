@@ -21,7 +21,7 @@ mix deps.get
 mix escript.build
 ```
 
-Then you will have the `lpad` script ready. You can copy it to a place accesible from wherever you are or even include it into the directory you have for generate your blog or website.
+Then you will have the `lpad` script ready. You can copy it to a place accessible from wherever you are or even include it into the directory you have for generate your blog or website.
 
 When you are running `lpad`, this command searches for a `lambdapad.exs` file into the current directory. You can indicate where the file is located, even if you called it in another way:
 
@@ -46,7 +46,7 @@ title = "My Blog"
 description = "I put my ideas here... what else?"
 ```
 
-Actually, you can include more sections inside of this file which are going to be accesible from the templates and the transformations.
+Actually, you can include more sections inside of this file which are going to be accessible from the templates and the transformations.
 
 If we want to use `eterm` then we could write it in this way:
 
@@ -668,6 +668,31 @@ end
 ```
 
 This is meaning to copy everything from `assets` directory into the `site` directory.
+
+## Extensions
+
+Taking advantage of the Elixir syntax we can add extensions. These extensions are mainly transformations which could be shared and plugged into our projects which make easier to configure different blogs sharing the same extensions. The extensions have to be as isolated files into the system putting only what we need to be plugged and then, inside of the configuration we could use:
+
+```elixir
+extension "last_update.exs"
+```
+
+This help us to define the content of the file `last_update.exs` as:
+
+```elixir
+transform "last_update" do
+  set on: :config
+  set run: fn(config, posts) ->
+    last_update =
+      posts
+      |> Enum.map(& &1["updated"] || &1["date"])
+      |> Enum.sort(:desc)
+      |> List.first()
+
+    Map.put(config, "last_update", last_update)
+  end
+end
+```
 
 ## HTTP Server
 

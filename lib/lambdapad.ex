@@ -262,4 +262,12 @@ defmodule Lambdapad do
       var!(conf, Lambdapad.Blog) = new_conf
     end
   end
+
+  defmacro extension(file) do
+    file
+    |> File.read!()
+    |> Code.string_to_quoted!()
+  end
+
+  defmacro doc(_text), do: nil
 end
