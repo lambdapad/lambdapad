@@ -141,7 +141,7 @@ As you can see, at the moment, you can choose between Elixir or Erlang. You can 
 
 ## Configuration Blocks (Elixir)
 
-We defined different blocks to be analysed and in use by lambdapad to generate the website. We are going to see them in detail right now.
+We defined different blocks to be analyzed and in use by lambdapad to generate the website. We are going to see them in detail right now.
 
 ### `config`
 

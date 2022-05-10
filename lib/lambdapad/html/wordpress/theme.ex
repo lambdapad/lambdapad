@@ -2,7 +2,7 @@ defmodule Lambdapad.Html.Wordpress.Theme do
   import Record
   alias Lambdapad.Html.Wordpress
 
-  @behaviour :ephp_func
+  @behaviour :ephp_lib
 
   @default_html_lang "en"
 
