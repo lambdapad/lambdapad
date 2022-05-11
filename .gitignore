@@ -34,3 +34,4 @@ samples/*/site
 
 # Ignoring generated script
 /lpad
+.vscode
