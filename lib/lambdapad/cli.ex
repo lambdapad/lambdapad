@@ -52,8 +52,8 @@ defmodule Lambdapad.Cli do
     end
   end
 
-  def blocks(elements) when map_size(elements) == 1, do: "(1 block)"
-  def blocks(elements), do: "(#{map_size(elements)} blocks)"
+  def blocks(elements) when length(elements) == 1, do: "(1 block)"
+  def blocks(elements), do: "(#{length(elements)} blocks)"
 
   defp commands(%_{args: %{infile: nil}} = params, rawargs) do
     commands(%{params | args: %{infile: @default_file}}, rawargs)
@@ -95,7 +95,7 @@ defmodule Lambdapad.Cli do
       end
 
     pages_data = get_pages(mod, config)
-    if map_size(pages_data) do
+    if length(pages_data) do
       t = print_level1("Processing pages", blocks(pages_data))
       Generate.Pages.process(pages_data, config, mod, workdir, output_dir)
       print_level1_ok(t)
