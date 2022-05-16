@@ -3,12 +3,20 @@ defmodule Lambdapad.Config do
 
   def lambdapad_metainfo() do
     spec = unquote(Lambdapad.MixProject.project())
+    today = Date.utc_today()
+    months = ~w[Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec]
     %{
       "lambdapad" => %{
         "name" => spec[:name],
         "vsn" => spec[:version],
         "description" => spec[:description],
         "url" => spec[:homepage_url]
+      },
+      "build" => %{
+        "date" => to_string(today),
+        "year" => today.year,
+        "month" => Enum.at(months, today.month - 1),
+        "day" => today.day
       }
     }
   end

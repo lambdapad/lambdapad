@@ -38,26 +38,26 @@ defmodule Lambdapad.Generate.Sources do
         {%{"id" => Path.rootname(Path.basename(file))}, content}
       end
 
-    {excerpt, excerpt_html} =
+    excerpt =
       if has_excerpt? do
-        excerpt =
-          case String.split(post, ~r/\n<!--\s*more\s*-->\s*\n/, parts: 2) do
-            [excerpt, _] -> excerpt
-            [_] -> hd(String.split(post, "\n", parts: 2))
-          end
-
-        {get_excerpt_text(excerpt, file), get_excerpt_html(excerpt, file)}
-      else
-        {nil, nil}
+        case String.split(post, ~r/\n<!--\s*more\s*-->\s*\n/, parts: 2) do
+          [excerpt, _] -> excerpt
+          [_] -> hd(String.split(post, "\n", parts: 2))
+        end
       end
 
     header
-    |> Map.put("excerpt_html", excerpt_html)
-    |> Map.put("excerpt", excerpt)
-    |> Map.put("content", get_post(post, file))
+    |> Map.put("excerpt_raw", excerpt)
+    |> Map.put("excerpt_html", to_html(excerpt, file))
+    |> Map.put("excerpt", to_text(excerpt, file))
+    |> Map.put("content_raw", post)
+    |> Map.put("content_text", to_text(post, file))
+    |> Map.put("content", to_html(post, file))
   end
 
-  defp get_post(binary, file) do
+  defp to_html(nil, _file), do: nil
+
+  defp to_html(binary, file) do
     {_status, html, messages} = Earmark.as_html(binary, @opts)
     Enum.each(messages, fn {:warning, line, message} ->
       Cli.print_level2_warn([file, ":", to_string(line), " ", message])
@@ -65,15 +65,9 @@ defmodule Lambdapad.Generate.Sources do
     html
   end
 
-  defp get_excerpt_html(binary, file) do
-    {_status, html, messages} = Earmark.as_html(binary, @opts)
-    Enum.each(messages, fn {:warning, line, message} ->
-      Cli.print_level2_warn([file, ":", to_string(line), " ", message])
-    end)
-    html
-  end
+  defp to_text(nil, _file), do: nil
 
-  defp get_excerpt_text(binary, file) do
+  defp to_text(binary, file) do
     binary
     |> String.split("\n")
     |> EarmarkParser.as_ast(file: file)

@@ -646,7 +646,7 @@ Lambdapad also insert information inside of the template if you want to use it l
 
 - `name` is set as `Lambdapad`
 - `url` is set as https://lambdapad.com
-- `vsn` is set as the version number of the Lambdapad in use, at this moment: `0.1.0`
+- `vsn` is set as the version number of the Lambdapad in use, at this moment: `0.6.0`
 - `description` is set as `Static website generator`
 
 From every post we have also, and usually, available the following data:
