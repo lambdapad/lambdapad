@@ -3,7 +3,6 @@ defmodule Lambdapad.Cli do
   alias Lambdapad.{Cli, Config, Generate, Http}
   alias Lambdapad.Generate.Sources
 
-  @default_file "lambdapad.exs"
   @default_port 8080
   @default_verbosity 1
 
@@ -17,6 +16,14 @@ defmodule Lambdapad.Cli do
     end
 
     absname(Path.dirname(lambdapad_file))
+  end
+
+  def default_file do
+    if File.exists?("index.erl") do
+      "index.erl"
+    else
+      "lambdapad.exs"
+    end
   end
 
   @spec main(any) :: none | :ok
@@ -53,7 +60,7 @@ defmodule Lambdapad.Cli do
   end
 
   defp commands(%_{args: %{infile: nil}} = params, rawargs) do
-    commands(%{params | args: %{infile: @default_file}}, rawargs)
+    commands(%{params | args: %{infile: default_file()}}, rawargs)
   end
 
   defp commands(%_{args: %{infile: filename}, flags: %{verbosity: loglevel}}, rawargs) do
@@ -103,7 +110,7 @@ defmodule Lambdapad.Cli do
   end
 
   defp commands({subcommand, %_{args: %{infile: nil}} = params}, rawargs) do
-    commands({subcommand, %{params | args: %{infile: @default_file}}}, rawargs)
+    commands({subcommand, %{params | args: %{infile: default_file()}}}, rawargs)
   end
 
   defp commands({[:clean], %_{args: %{infile: lambdapad_file}}}, rawargs) do
@@ -150,7 +157,7 @@ defmodule Lambdapad.Cli do
     end
   end
 
-  defp commands({[:new, :list], _}, _rawargs) do
+  defp commands({[:templates], _}, _rawargs) do
     IO.write("Available templates: ")
 
     list_templates()
@@ -200,6 +207,7 @@ defmodule Lambdapad.Cli do
     end)
   end
 
+  @external_resource "templates/*"
   Module.register_attribute(__MODULE__, :templates, accumulate: true)
   for "templates/" <> template <- Path.wildcard("templates/*") do
     files =
@@ -310,7 +318,7 @@ defmodule Lambdapad.Cli do
   defp parse_options(args) do
     spec = Config.lambdapad_metainfo()["lambdapad"]
     infile = [infile: [
-      value_name: "lambdapad.exs",
+      value_name: default_file(),
       help: "Specification to build your web site.",
       required: false,
       parser: :string
@@ -356,9 +364,13 @@ defmodule Lambdapad.Cli do
             ]
           ]
         ],
+        templates: [
+          name: "templates",
+          about: "List available templates"
+        ],
         new: [
           name: "new",
-          about: "New project based on a template, check: new --list",
+          about: "New project based on a template, check templates command",
           args: [
             name: [
               value_name: "name",
@@ -377,12 +389,6 @@ defmodule Lambdapad.Cli do
               parser: :string,
               required: false,
               default: "blog"
-            ]
-          ],
-          subcommands: [
-            list: [
-              name: "list",
-              about: "List available templates"
             ]
           ]
         ]

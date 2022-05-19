@@ -29,7 +29,7 @@ pages(Config) ->
   Blog = get_value("blog", Config),
   Workdir = get_value("workdir", Blog),
   #{
-    "/about" => {
+    "/" => {
       template, "index.html",
       {about, "snippets/about.md"},
       #{
