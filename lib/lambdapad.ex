@@ -263,6 +263,24 @@ defmodule Lambdapad do
     end
   end
 
+  defmacro extension("https:" <> _ = url) do
+    url
+    |> to_string()
+    |> :httpc.request()
+    |> case do
+      {:ok, {{_http, 200, _ok}, _headers, content}} ->
+        content
+        |> to_string()
+        |> Code.string_to_quoted!()
+
+      {:ok, {{_http, code, error}, _headers, _content}} ->
+        raise "Cannot retrieve extension:\n\t#{url}\n\t#{error} (#{code})"
+
+      error ->
+        raise "An error happended:\n#{inspect(error)}"
+    end
+  end
+
   defmacro extension(file) do
     file
     |> File.read!()

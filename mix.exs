@@ -6,7 +6,7 @@ defmodule Lambdapad.MixProject do
       name: "Lambdapad",
       description: "Static website generator",
       app: :lambdapad,
-      version: "0.6.0",
+      version: "0.7.0",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -25,7 +25,7 @@ defmodule Lambdapad.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :eex]
+      extra_applications: [:logger, :eex, :inets, :ssl]
     ]
   end
 
