@@ -6,7 +6,7 @@ defmodule Lambdapad.MixProject do
       name: "Lambdapad",
       description: "Static website generator",
       app: :lambdapad,
-      version: "0.7.0",
+      version: "0.7.1",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -32,6 +32,7 @@ defmodule Lambdapad.MixProject do
   defp deps do
     [
       {:earmark, "~> 1.4"},
+      {:earmark_parser, github: "manuel-rubio/earmark_parser", override: true},
       {:erlydtl, github: "manuel-rubio/erlydtl"},
       {:pockets, "~> 1.0"},
       {:toml, "~> 0.6"},
