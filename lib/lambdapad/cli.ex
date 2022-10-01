@@ -1,5 +1,17 @@
 defmodule Lambdapad.Cli do
+  @moduledoc """
+  Generic module in charge of handling the CLI, or Command Line
+  Interface. The concerns for this module are regarding the
+  handling of the input arguments, the output for the CLI and
+  the flow of the application, it's:
 
+  1. Reading and processing the configuration.
+  2. Compiling the definition file (i.e. `lambdapad.exs`)
+  3. Processing the widgets.
+  4. Processing the pages.
+  5. Processing the checks.
+  6. Processing the assets.
+  """
   alias Lambdapad.{Cli, Config, Generate, Http}
   alias Lambdapad.Generate.Sources
 
@@ -127,6 +139,7 @@ defmodule Lambdapad.Cli do
     print_level1_ok(t)
 
     dir = Path.join([workdir, config["blog"]["output_dir"] || "site"])
+
     if File.exists?(dir) do
       t = print_level1("Remove directory", dir)
       File.rm_rf!(dir)
@@ -140,7 +153,10 @@ defmodule Lambdapad.Cli do
     :ok
   end
 
-  defp commands({[:http], %_{args: %{infile: lambdapad_file}, options: %{port: port}} = params}, rawargs) do
+  defp commands(
+         {[:http], %_{args: %{infile: lambdapad_file}, options: %{port: port}} = params},
+         rawargs
+       ) do
     workdir = cwd!(lambdapad_file)
 
     {:ok, mod} = compile(lambdapad_file)
@@ -151,6 +167,7 @@ defmodule Lambdapad.Cli do
 
     Http.start_server(port, dir)
     IO.puts([IO.ANSI.green(), "options", IO.ANSI.reset(), ": [q]uit or [r]ecompile"])
+
     if IO.gets("") == "r\n" do
       commands(%{params | options: %{}, flags: %{verbosity: @default_verbosity}}, rawargs)
       commands({[:http], params}, rawargs)
@@ -165,13 +182,18 @@ defmodule Lambdapad.Cli do
     |> IO.puts()
   end
 
-  defp commands({[:new], %_{args: %{name: name}, options: %{template: template}, flags: %{verbosity: loglevel}}}, _rawargs) do
+  defp commands(
+         {[:new],
+          %_{args: %{name: name}, options: %{template: template}, flags: %{verbosity: loglevel}}},
+         _rawargs
+       ) do
     if File.exists?(name) do
       IO.puts([IO.ANSI.red(), "error", IO.ANSI.reset(), ": cannot create #{name} directory."])
       System.halt(1)
     end
 
     files = get_template_files(template)
+
     unless files do
       IO.puts([IO.ANSI.red(), "error", IO.ANSI.reset(), ": template #{template} not found."])
       System.halt(1)
@@ -184,13 +206,15 @@ defmodule Lambdapad.Cli do
     File.mkdir_p!(name)
     print_level2_ok()
     print_level2("Creating files")
-    Enum.each(files, fn({file, content}) ->
+
+    Enum.each(files, fn {file, content} ->
       print_level3(file)
       filepath = Path.join([name, file])
       dirpath = Path.dirname(filepath)
       File.mkdir_p!(dirpath)
       File.write!(filepath, content)
     end)
+
     print_level2_ok()
     print_level1_ok(t)
   end
@@ -203,22 +227,24 @@ defmodule Lambdapad.Cli do
         print_level2_ok()
         config
 
-      _, config -> config
+      _, config ->
+        config
     end)
   end
 
   @external_resource "templates/*"
   Module.register_attribute(__MODULE__, :templates, accumulate: true)
+
   for "templates/" <> template <- Path.wildcard("templates/*") do
     files =
       Path.wildcard("templates/#{template}/**")
-      |> Enum.filter(& File.regular?/1)
+      |> Enum.filter(&File.regular?/1)
 
     @templates {template,
-      for filepath <- files do
-        file = String.replace_prefix(filepath, "templates/#{template}/", "")
-        {file, File.read!(filepath)}
-      end}
+                for filepath <- files do
+                  file = String.replace_prefix(filepath, "templates/#{template}/", "")
+                  {file, File.read!(filepath)}
+                end}
   end
 
   defp get_template_files(template) do
@@ -241,29 +267,52 @@ defmodule Lambdapad.Cli do
       IO.puts([IO.ANSI.blue(), "*", IO.ANSI.reset(), " ", name, ":"])
     else
       IO.write([
-        IO.ANSI.blue(), "*", IO.ANSI.reset(), " ", name, ":\n  ",
+        IO.ANSI.blue(),
+        "*",
+        IO.ANSI.reset(),
+        " ",
+        name,
+        ":\n  "
       ])
     end
+
     System.system_time(:millisecond)
   end
 
   def print_level1(name, annex) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
       IO.puts([
-        IO.ANSI.blue(), "*", IO.ANSI.reset(), " ", name, ": ",
-        IO.ANSI.green(), annex, IO.ANSI.reset()
+        IO.ANSI.blue(),
+        "*",
+        IO.ANSI.reset(),
+        " ",
+        name,
+        ": ",
+        IO.ANSI.green(),
+        annex,
+        IO.ANSI.reset()
       ])
     else
       IO.write([
-        IO.ANSI.blue(), "*", IO.ANSI.reset(), " ", name, ": ",
-        IO.ANSI.green(), annex, IO.ANSI.reset(), "\n  "
+        IO.ANSI.blue(),
+        "*",
+        IO.ANSI.reset(),
+        " ",
+        name,
+        ": ",
+        IO.ANSI.green(),
+        annex,
+        IO.ANSI.reset(),
+        "\n  "
       ])
     end
+
     System.system_time(:millisecond)
   end
 
   def print_level1_ok(t) do
     t = System.system_time(:millisecond) - t
+
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
       IO.puts([IO.ANSI.blue(), "  Done (#{t / 1000}s)", IO.ANSI.reset()])
     else
@@ -277,24 +326,56 @@ defmodule Lambdapad.Cli do
     else
       IO.write([IO.ANSI.green(), ".", IO.ANSI.reset()])
     end
+
     System.system_time(:millisecond)
   end
 
   def print_level2(name, annex) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
       IO.write([
-        IO.ANSI.blue(), "  -", IO.ANSI.reset(), " ", name, " ",
-        IO.ANSI.yellow(), annex, IO.ANSI.reset(), " "])
+        IO.ANSI.blue(),
+        "  -",
+        IO.ANSI.reset(),
+        " ",
+        name,
+        " ",
+        IO.ANSI.yellow(),
+        annex,
+        IO.ANSI.reset(),
+        " "
+      ])
     else
       IO.write([IO.ANSI.green(), ".", IO.ANSI.reset()])
     end
+
     System.system_time(:millisecond)
+  end
+
+  def print_level2_error(filename, row, col, name, description) do
+    IO.write([
+      IO.ANSI.reset(),
+      "  ",
+      IO.ANSI.red(),
+      filename,
+      ":#{row}:#{col}: ",
+      IO.ANSI.yellow(),
+      to_string(name),
+      IO.ANSI.reset(),
+      ": ",
+      description,
+      "\n"
+    ])
   end
 
   def print_level2_warn(msg) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
       IO.write([
-        "\n    ", IO.ANSI.yellow(), "warning ", IO.ANSI.reset(), msg, "\n    "
+        "\n    ",
+        IO.ANSI.yellow(),
+        "warning ",
+        IO.ANSI.reset(),
+        msg,
+        "\n    "
       ])
     end
   end
@@ -317,18 +398,25 @@ defmodule Lambdapad.Cli do
 
   defp parse_options(args) do
     spec = Config.lambdapad_metainfo()["lambdapad"]
-    infile = [infile: [
-      value_name: default_file(),
-      help: "Specification to build your web site.",
-      required: false,
-      parser: :string
-    ]]
-    verbosity = [verbosity: [
-      short: "-v",
-      help: "Verbosity level.",
-      multiple: true,
-      default: 1
-    ]]
+
+    infile = [
+      infile: [
+        value_name: default_file(),
+        help: "Specification to build your web site.",
+        required: false,
+        parser: :string
+      ]
+    ]
+
+    verbosity = [
+      verbosity: [
+        short: "-v",
+        help: "Verbosity level.",
+        multiple: true,
+        default: 1
+      ]
+    ]
+
     Optimus.new!(
       description: spec["name"],
       version: spec["vsn"],
@@ -353,7 +441,7 @@ defmodule Lambdapad.Cli do
               short: "-p",
               long: "--port",
               help: "Port where to listen, by default it is 8080",
-              parser: fn(p) ->
+              parser: fn p ->
                 case Integer.parse(p) do
                   {port, ""} when port >= 1024 -> {:ok, port}
                   {port, ""} -> {:error, "port must be greater than 1024, #{port} is invalid"}

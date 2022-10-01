@@ -1,6 +1,17 @@
 defmodule Lambdapad.Cli.Exs do
+  @moduledoc """
+  Performs the compilation for the Elixir configuration code. Mainly,
+  it's reading the `lambdapad.exs` file and compiling the module as
+  `Lambdapad.Blog` to process the functions as the data provided
+  inside of the module.
+  """
 
+  @doc """
+  Performs the compilation giving the name of the file. By default the
+  filename will be `lambdapad.exs`.
+  """
   def compile(lambdapad_file) do
+    Code.compiler_options(ignore_module_conflict: true)
     [{mod, _}] = Code.compile_file(lambdapad_file)
     {:ok, {__MODULE__, mod}}
   end

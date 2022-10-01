@@ -1,54 +1,42 @@
 defmodule Lambdapad.Html do
-  alias Lambdapad.Cli
+  @moduledoc """
+  Creates the module necessary for the rendering of the pages given a
+  specific name.
 
-  def init(name, html_file, workdir, :erlydtl) when is_binary(name) do
-    module = Module.concat([__MODULE__, Macro.camelize(name)])
-    if not function_exported?(module, :__info__, 1) do
-      templates_dir = Path.join([workdir, "templates"])
-      html_file_path = to_charlist(Path.join([templates_dir, html_file]))
-      opts = [
-        :return,
-        libraries: [
-          {"widget", Lambdapad.Html.Widget},
-          {"filters", Lambdapad.Html.Filters}
-        ],
-        default_libraries: ["widget", "filters"]
-      ]
-      case :erlydtl.compile_file(html_file_path, module, opts) do
-        {:ok, _module, warnings} ->
-          warnings = filter_warnings(warnings)
-          if warnings != [] do
-            Cli.print_level2_warn("#{inspect(warnings)}")
-          end
-          module
+  The idea is that providing the information regarding the HTML file,
+  the workdir, the backend (i.e. erlydtl), and the name, we can create
+  a module which we could use for rendering all of the pages which are
+  under the same name.
+  """
 
-        {:error, error, []} ->
-          raise """
-          template #{inspect(name)} file #{inspect(html_file)} not found
+  @type name() :: String.t()
+  @type html_file() :: String.t()
+  @type workdir() :: String.t()
+  @type backend() :: module()
+  @type render_type() :: :page | :widget
 
-          error: #{inspect(error)}
-          """
-      end
-    else
-      module
-    end
+  @doc """
+  Init must create a new module and return the name of the module.
+  This module will be in use by the `render/3` function (as its 2nd
+  parameter) and it will generate the pages requested based on the
+  data.
+  """
+  @callback init(render_type(), name(), html_file(), workdir()) :: module()
+
+  @doc """
+  The init function is in charge for calling the implementation based
+  on the 4th parameter for this behaviour.
+  """
+  def init(type, name, html_file, workdir, backend) when is_binary(name) do
+    backend = Module.concat([__MODULE__, Macro.camelize(to_string(backend))])
+    backend.init(type, name, html_file, workdir)
   end
 
-  defp filter_warnings(warnings) do
-    filter_warnings(warnings, [])
-  end
-
-  defp filter_warnings([], acc), do: acc
-  defp filter_warnings([{_file, [{:none, _, :no_out_dir}]} | rest], acc) do
-    filter_warnings(rest, acc)
-  end
-  defp filter_warnings([{'', [{_n, :sys_core_fold, :useless_building}]} | rest], acc) do
-    filter_warnings(rest, acc)
-  end
-  defp filter_warnings([warning|rest], acc) do
-    filter_warnings(rest, [warning|acc])
-  end
-
+  @doc """
+  Given the variables (environment) for the templates, the module
+  where we compiled the templates, and the configuration, the
+  function is in charge of the rendering for the specific page.
+  """
   def render(vars, module, config) do
     vars = vars ++ config
     {:ok, data} = apply(module, :render, [vars, config])

@@ -1,4 +1,9 @@
 defmodule Lambdapad.Generate do
+  @moduledoc """
+  General generation of the pages. This module contains generic functions a
+  common functionality to process the pages, widgets, assets, and
+  configuration for the generation of the whole website.
+  """
   alias Lambdapad.{Cli, Config}
 
   def resolve_uri(config, name, funct_or_uri, vars, index \\ nil)
@@ -9,9 +14,11 @@ defmodule Lambdapad.Generate do
 
   def resolve_uri(config, name, uri, vars, _index) when is_binary(uri) do
     uri_mod = Module.concat([__MODULE__, URI, name])
+
     unless function_exported?(uri_mod, :render, 1) do
       {:ok, _uri_mod} = :erlydtl.compile_template(uri, uri_mod)
     end
+
     {:ok, iodata_uri} = uri_mod.render(vars)
     Path.join([config["blog"]["url"] || "", IO.iodata_to_binary(iodata_uri)])
   end
@@ -53,175 +60,147 @@ defmodule Lambdapad.Generate do
     abs_path
   end
 
-  def resolve_transforms_on_item(mod, %{transform_on_item: trans_items}) when is_list(trans_items) do
+  def resolve_transforms_on_item(mod, %{transform_on_item: trans_items})
+      when is_list(trans_items) do
     trans_items
     |> Enum.reverse()
     |> Enum.reduce(fn posts, _config -> posts end, fn
-      (trans_item, chained_fun) when is_binary(trans_item) ->
-        case Cli.apply_transform(mod, trans_item) do
-          %{on: :item, run: trans_function} ->
-            fn posts, config ->
-              trans_function.(posts, config)
-              |> chained_fun.(config)
-            end
+      trans_item, chained_fun when is_binary(trans_item) ->
+        chain_function(:item, mod, trans_item, chained_fun)
 
-          %{on: other} when other in [:page, :config, :persist] ->
-            raise "transforms persist, config, page and item cannot be swapped"
-
-          error ->
-            raise "transform #{inspect(trans_item)} unknown: #{inspect(error)}"
-        end
-
-      (trans_item, chained_fun) when is_function(trans_item) ->
-        fn posts, config ->
-          trans_item.(posts, config)
-          |> chained_fun.(config)
-        end
+      trans_item, chained_fun when is_function(trans_item) ->
+        get_chain_fn(trans_item, chained_fun)
     end)
   end
-  def resolve_transforms_on_item(mod, %{transform_on_item: trans_items}) when is_binary(trans_items) do
-    case Cli.apply_transform(mod, trans_items) do
-      %{on: :item, run: trans_function} ->
-        trans_function
 
-      %{on: other} when other in [:page, :config, :persist] ->
-        raise "transforms persist, config, page and item cannot be swapped"
-
-      error ->
-        raise "transform #{inspect(trans_items)} unknown: #{inspect(error)}"
-    end
+  def resolve_transforms_on_item(mod, %{transform_on_item: trans_items})
+      when is_binary(trans_items) do
+    chain_function(:item, mod, trans_items, nil)
   end
-  def resolve_transforms_on_item(_mod, %{transform_on_item: trans_items}) when is_function(trans_items) do
+
+  def resolve_transforms_on_item(_mod, %{transform_on_item: trans_items})
+      when is_function(trans_items) do
     trans_items
   end
+
   def resolve_transforms_on_item(_mod, %{}), do: nil
 
-  def resolve_transforms_on_page(mod, %{transform_on_page: trans_page}) when is_list(trans_page) do
+  def resolve_transforms_on_page(mod, %{transform_on_page: trans_page})
+      when is_list(trans_page) do
     trans_page
     |> Enum.reverse()
     |> Enum.reduce(fn posts, _config -> posts end, fn
-      (trans_page, chained_fun) when is_binary(trans_page) ->
-        case Cli.apply_transform(mod, trans_page) do
-          %{on: :page, run: trans_function} ->
-            fn posts, config ->
-              trans_function.(posts, config)
-              |> chained_fun.(config)
-            end
+      trans_page, chained_fun when is_binary(trans_page) ->
+        chain_function(:page, mod, trans_page, chained_fun)
 
-          %{on: other} when other in [:item, :config, :persist] ->
-            raise "transforms persist, config, page and item cannot be swapped"
-
-          error ->
-            raise "transform #{inspect(trans_page)} unknown: #{inspect(error)}"
-        end
-
-      (trans_page, chained_fun) when is_function(trans_page) ->
-        fn posts, config ->
-          trans_page.(posts, config)
-          |> chained_fun.(config)
-        end
+      trans_page, chained_fun when is_function(trans_page) ->
+        get_chain_fn(trans_page, chained_fun)
     end)
   end
-  def resolve_transforms_on_page(mod, %{transform_on_page: trans_page}) when is_binary(trans_page) do
-    case Cli.apply_transform(mod, trans_page) do
-      %{on: :page, run: trans_function} ->
-        trans_function
 
-      %{on: other} when other in [:item, :config, :persist] ->
-        raise "transforms persist, config, page and item cannot be swapped"
-
-      error ->
-        raise "transform #{inspect(trans_page)} unknown: #{inspect(error)}"
-    end
+  def resolve_transforms_on_page(mod, %{transform_on_page: trans_page})
+      when is_binary(trans_page) do
+    chain_function(:page, mod, trans_page, nil)
   end
-  def resolve_transforms_on_page(_mod, %{transform_on_page: trans_page}) when is_function(trans_page) do
+
+  def resolve_transforms_on_page(_mod, %{transform_on_page: trans_page})
+      when is_function(trans_page) do
     trans_page
   end
+
   def resolve_transforms_on_page(_mod, %{}), do: nil
 
-  def resolve_transforms_on_config(mod, %{transform_on_config: trans_config}) when is_list(trans_config) do
+  def resolve_transforms_on_config(mod, %{transform_on_config: trans_config})
+      when is_list(trans_config) do
     trans_config
     |> Enum.reverse()
     |> Enum.reduce(fn config, _posts -> config end, fn
-      (trans_config, chained_fun) when is_binary(trans_config) ->
-        case Cli.apply_transform(mod, trans_config) do
-          %{on: :config, run: trans_function} ->
-            fn config, posts ->
-              trans_function.(config, posts)
-              |> chained_fun.(posts)
-            end
+      trans_config, chained_fun when is_binary(trans_config) ->
+        chain_function(:config, mod, trans_config, chained_fun)
 
-          %{on: other} when other in [:item, :page, :persist] ->
-            raise "transforms persist, config, page and item cannot be swapped"
-
-          error ->
-            raise "transform #{inspect(trans_config)} unknown: #{inspect(error)}"
-        end
-
-      (trans_config, chained_fun) when is_function(trans_config) ->
-        fn config, posts ->
-          trans_config.(config, posts)
-          |> chained_fun.(posts)
-        end
+      trans_config, chained_fun when is_function(trans_config) ->
+        get_config_chain_fn(trans_config, chained_fun)
     end)
   end
-  def resolve_transforms_on_config(mod, %{transform_on_config: trans_config}) when is_binary(trans_config) do
-    case Cli.apply_transform(mod, trans_config) do
-      %{on: :config, run: trans_function} ->
-        trans_function
 
-      %{on: other} when other in [:item, :page, :persist] ->
-        raise "transforms persist, config, page and item cannot be swapped"
-
-      error ->
-        raise "transform #{inspect(trans_config)} unknown: #{inspect(error)}"
-    end
+  def resolve_transforms_on_config(mod, %{transform_on_config: trans_config})
+      when is_binary(trans_config) do
+    chain_function(:config, mod, trans_config, nil)
   end
-  def resolve_transforms_on_config(_mod, %{transform_on_config: trans_config}) when is_function(trans_config) do
+
+  def resolve_transforms_on_config(_mod, %{transform_on_config: trans_config})
+      when is_function(trans_config) do
     trans_config
   end
+
   def resolve_transforms_on_config(_mod, %{}), do: nil
 
-  def resolve_transforms_to_persist(mod, %{transform_to_persist: trans_persist}) when is_list(trans_persist) do
+  def resolve_transforms_to_persist(mod, %{transform_to_persist: trans_persist})
+      when is_list(trans_persist) do
     trans_persist
     |> Enum.reverse()
     |> Enum.reduce(fn config, _posts -> config end, fn
-      (trans_persist, chained_fun) when is_binary(trans_persist) ->
-        case Cli.apply_transform(mod, trans_persist) do
-          %{on: :persist, run: trans_function} ->
-            fn config, posts ->
-              trans_function.(config, posts)
-              |> chained_fun.(posts)
-            end
+      trans_persist, chained_fun when is_binary(trans_persist) ->
+        chain_function(:persist, mod, trans_persist, chained_fun)
 
-          %{on: other} when other in [:item, :page, :config] ->
-            raise "transforms persist, config, page and item cannot be swapped"
-
-          error ->
-            raise "transform #{inspect(trans_persist)} unknown: #{inspect(error)}"
-        end
-
-      (trans_persist, chained_fun) when is_function(trans_persist) ->
-        fn config, posts ->
-          trans_persist.(config, posts)
-          |> chained_fun.(posts)
-        end
+      trans_persist, chained_fun when is_function(trans_persist) ->
+        get_config_chain_fn(trans_persist, chained_fun)
     end)
   end
-  def resolve_transforms_to_persist(mod, %{transform_to_persist: trans_persist}) when is_binary(trans_persist) do
-    case Cli.apply_transform(mod, trans_persist) do
-      %{on: :persist, run: trans_function} ->
-        trans_function
 
-      %{on: other} when other in [:item, :page, :config] ->
-        raise "transforms persist, config, page and item cannot be swapped"
-
-      error ->
-        raise "transform #{inspect(trans_persist)} unknown: #{inspect(error)}"
-    end
+  def resolve_transforms_to_persist(mod, %{transform_to_persist: trans_persist})
+      when is_binary(trans_persist) do
+    chain_function(:persist, mod, trans_persist, nil)
   end
-  def resolve_transforms_to_persist(_mod, %{transform_to_persist: trans_persist}) when is_function(trans_persist) do
+
+  def resolve_transforms_to_persist(_mod, %{transform_to_persist: trans_persist})
+      when is_function(trans_persist) do
     trans_persist
   end
+
   def resolve_transforms_to_persist(_mod, %{}), do: nil
+
+  defp get_chain_fn(chain_fn, chained_fn) do
+    fn posts, config ->
+      chain_fn.(posts, config)
+      |> chained_fn.(config)
+    end
+  end
+
+  defp get_config_chain_fn(chain_fn, chained_fn) do
+    fn config, posts ->
+      chain_fn.(config, posts)
+      |> chained_fn.(posts)
+    end
+  end
+
+  @types ~w[ item page config persist ]a
+
+  def chain_function(type, mod, trans_fn, chained_fn) do
+    case Cli.apply_transform(mod, trans_fn) do
+      %{on: ^type, run: trans_function} when type in [:config, :persist] ->
+        if chained_fn do
+          get_config_chain_fn(trans_function, chained_fn)
+        else
+          trans_function
+        end
+
+      %{on: ^type, run: trans_function} when type in [:item, :page] ->
+        if chained_fn do
+          get_chain_fn(trans_function, chained_fn)
+        else
+          trans_function
+        end
+
+      %{on: other} = debug when other != type and other in @types ->
+        raise """
+        transforms persist, config, page and item cannot be swapped
+
+        data: #{inspect(debug)}
+        """
+
+      error ->
+        raise "transform #{inspect(trans_fn)} unknown: #{inspect(error)}"
+    end
+  end
 end

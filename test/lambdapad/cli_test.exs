@@ -10,65 +10,68 @@ defmodule Lambdapad.CliTest do
 
       config = Cli.get_configs(mod, [])
       assert [%{format: :eterm, from: "blog.config", var_name: "blog"}] == config
+
       assert %{
-        "recent posts" => %{
-          env: %{site_root: '/'},
-          excerpt: true,
-          format: :erlydtl,
-          from: "posts/**/*.md",
-          headers: true,
-          index: true,
-          template: "recent-posts.html",
-          var_name: "posts"
-        }
-      } == Cli.get_widgets(mod, config)
+               "recent posts" => %{
+                 env: %{site_root: '/'},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "posts/**/*.md",
+                 headers: true,
+                 index: true,
+                 template: "recent-posts.html",
+                 var_name: "posts"
+               }
+             } == Cli.get_widgets(mod, config)
+
       assert %{
-        "/about" => %{
-          env: %{site_root: '/'},
-          excerpt: true,
-          format: :erlydtl,
-          from: "snippets/about.md",
-          headers: true,
-          index: false,
-          paginated: false,
-          template: "index.html",
-          uri: "/about",
-          uri_type: :dir,
-          var_name: "about"
-        },
-        "/posts" => %{
-          env: %{site_root: '/'},
-          excerpt: true,
-          format: :erlydtl,
-          from: "posts/**/*.md",
-          headers: true,
-          index: true,
-          paginated: false,
-          template: "posts.html",
-          uri: "/posts",
-          uri_type: :dir,
-          var_name: "posts"
-        },
-        "/posts/{{ post.id }}" => %{
-          env: %{site_root: '/'},
-          excerpt: true,
-          format: :erlydtl,
-          from: "posts/**/*.md",
-          headers: true,
-          index: false,
-          paginated: false,
-          template: "post.html",
-          uri: "/posts/{{ post.id }}",
-          uri_type: :dir,
-          var_name: "post"
-        }
-      } == Map.new(Cli.get_pages(mod, config))
+               "/about" => %{
+                 env: %{site_root: '/'},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "snippets/about.md",
+                 headers: true,
+                 index: false,
+                 paginated: false,
+                 template: "index.html",
+                 uri: "/about",
+                 uri_type: :dir,
+                 var_name: "about"
+               },
+               "/posts" => %{
+                 env: %{site_root: '/'},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "posts/**/*.md",
+                 headers: true,
+                 index: true,
+                 paginated: false,
+                 template: "posts.html",
+                 uri: "/posts",
+                 uri_type: :dir,
+                 var_name: "posts"
+               },
+               "/posts/{{ post.id }}" => %{
+                 env: %{site_root: '/'},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "posts/**/*.md",
+                 headers: true,
+                 index: false,
+                 paginated: false,
+                 template: "post.html",
+                 uri: "/posts/{{ post.id }}",
+                 uri_type: :dir,
+                 var_name: "post"
+               }
+             } == Map.new(Cli.get_pages(mod, config))
+
       assert %{
-        "files" => %{
-          from: "assets/*.css",
-          to: "site/css"
-        }
-      } == Cli.get_assets(mod, config)
+               "files" => %{
+                 from: "assets/*.css",
+                 to: "site/css"
+               }
+             } == Cli.get_assets(mod, config)
     end
 
     test "blog.exs" do
@@ -76,71 +79,77 @@ defmodule Lambdapad.CliTest do
       assert {:ok, mod} = Cli.Exs.compile(file)
 
       config = Cli.get_configs(mod, [])
-      assert [%{
-        format: :eterm,
-        from: "blog.config",
-        var_name: "blog",
-        transform_from_pages: nil
-      }] == config
+
+      assert [
+               %{
+                 format: :eterm,
+                 from: "blog.config",
+                 var_name: "blog",
+                 transform_from_pages: nil
+               }
+             ] == config
+
       assert %{
-        "recent posts" => %{
-          env: %{site_root: "/"},
-          excerpt: true,
-          format: :erlydtl,
-          from: "posts/**/*.md",
-          headers: true,
-          index: true,
-          template: "recent-posts.html",
-          var_name: "posts"
-        }
-      } == Cli.get_widgets(mod, config)
+               "recent posts" => %{
+                 env: %{site_root: "/"},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "posts/**/*.md",
+                 headers: true,
+                 index: true,
+                 template: "recent-posts.html",
+                 var_name: "posts"
+               }
+             } == Cli.get_widgets(mod, config)
+
       assert %{
-        "about" => %{
-          env: %{site_root: "/"},
-          excerpt: true,
-          format: :erlydtl,
-          from: "snippets/about.md",
-          headers: true,
-          index: false,
-          paginated: false,
-          template: "index.html",
-          uri: "/about",
-          uri_type: :dir,
-          var_name: "about"
-        },
-        "posts" => %{
-          env: %{site_root: "/"},
-          excerpt: true,
-          format: :erlydtl,
-          from: "posts/**/*.md",
-          headers: true,
-          index: true,
-          paginated: false,
-          template: "posts.html",
-          uri: "/posts",
-          uri_type: :dir,
-          var_name: "posts"
-        },
-        "individual posts" => %{
-          env: %{site_root: "/"},
-          excerpt: true,
-          format: :erlydtl,
-          from: "posts/**/*.md",
-          headers: true,
-          index: false,
-          paginated: false,
-          template: "post.html",
-          uri: "/posts/{{ post.id }}",
-          uri_type: :dir,
-          var_name: "post"
-        }
-      } == Map.new(Cli.get_pages(mod, config))
+               "about" => %{
+                 env: %{site_root: "/"},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "snippets/about.md",
+                 headers: true,
+                 index: false,
+                 paginated: false,
+                 template: "index.html",
+                 uri: "/about",
+                 uri_type: :dir,
+                 var_name: "about"
+               },
+               "posts" => %{
+                 env: %{site_root: "/"},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "posts/**/*.md",
+                 headers: true,
+                 index: true,
+                 paginated: false,
+                 template: "posts.html",
+                 uri: "/posts",
+                 uri_type: :dir,
+                 var_name: "posts"
+               },
+               "individual posts" => %{
+                 env: %{site_root: "/"},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "posts/**/*.md",
+                 headers: true,
+                 index: false,
+                 paginated: false,
+                 template: "post.html",
+                 uri: "/posts/{{ post.id }}",
+                 uri_type: :dir,
+                 var_name: "post"
+               }
+             } == Map.new(Cli.get_pages(mod, config))
+
       assert %{
-        "files" => %{
-          from: "assets/*.css",
-          to: "site/css"
-        }
-      } == Cli.get_assets(mod, config)
+               "files" => %{
+                 from: "assets/*.css",
+                 to: "site/css"
+               }
+             } == Cli.get_assets(mod, config)
     end
 
     test "blog_extended.exs" do
@@ -148,72 +157,79 @@ defmodule Lambdapad.CliTest do
       assert {:ok, mod} = Cli.Exs.compile(file)
 
       config = Cli.get_configs(mod, [])
-      assert [%{
-        format: :eterm,
-        from: "blog.config",
-        var_name: "blog",
-        transform_from_pages: nil
-      }] == config
+
+      assert [
+               %{
+                 format: :eterm,
+                 from: "blog.config",
+                 var_name: "blog",
+                 transform_from_pages: nil
+               }
+             ] == config
+
       assert %{
-        "recent posts" => %{
-          env: %{site_root: "/"},
-          excerpt: true,
-          format: :erlydtl,
-          from: "posts/**/*.md",
-          headers: true,
-          index: true,
-          template: "recent-posts.html",
-          var_name: "posts"
-        }
-      } == Cli.get_widgets(mod, config)
+               "recent posts" => %{
+                 env: %{site_root: "/"},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "posts/**/*.md",
+                 headers: true,
+                 index: true,
+                 template: "recent-posts.html",
+                 var_name: "posts"
+               }
+             } == Cli.get_widgets(mod, config)
+
       assert %{
-        "about" => %{
-          env: %{site_root: "/"},
-          excerpt: true,
-          format: :erlydtl,
-          from: "snippets/about.md",
-          headers: true,
-          index: false,
-          paginated: false,
-          template: "index.html",
-          uri: "/about",
-          uri_type: :dir,
-          var_name: "about"
-        },
-        "posts" => %{
-          env: %{site_root: "/"},
-          excerpt: true,
-          format: :erlydtl,
-          from: "posts/**/*.md",
-          headers: true,
-          index: true,
-          paginated: false,
-          template: "posts.html",
-          uri: "/posts",
-          uri_type: :dir,
-          var_name: "posts"
-        },
-        "individual posts" => %{
-          env: %{site_root: "/"},
-          excerpt: true,
-          format: :erlydtl,
-          from: "posts/**/*.md",
-          headers: true,
-          index: false,
-          paginated: false,
-          template: "post.html",
-          uri: "/posts/{{ post.id }}",
-          uri_type: :dir,
-          var_name: "post"
-        }
-      } == Map.new(Cli.get_pages(mod, config))
+               "about" => %{
+                 env: %{site_root: "/"},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "snippets/about.md",
+                 headers: true,
+                 index: false,
+                 paginated: false,
+                 template: "index.html",
+                 uri: "/about",
+                 uri_type: :dir,
+                 var_name: "about"
+               },
+               "posts" => %{
+                 env: %{site_root: "/"},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "posts/**/*.md",
+                 headers: true,
+                 index: true,
+                 paginated: false,
+                 template: "posts.html",
+                 uri: "/posts",
+                 uri_type: :dir,
+                 var_name: "posts"
+               },
+               "individual posts" => %{
+                 env: %{site_root: "/"},
+                 excerpt: true,
+                 format: :erlydtl,
+                 from: "posts/**/*.md",
+                 headers: true,
+                 index: false,
+                 paginated: false,
+                 template: "post.html",
+                 uri: "/posts/{{ post.id }}",
+                 uri_type: :dir,
+                 var_name: "post"
+               }
+             } == Map.new(Cli.get_pages(mod, config))
+
       assert %{"last_update" => %{on: :config, run: _}} = Lambdapad.Blog.transforms()
+
       assert %{
-        "files" => %{
-          from: "assets/*.css",
-          to: "site/css"
-        }
-      } == Cli.get_assets(mod, config)
+               "files" => %{
+                 from: "assets/*.css",
+                 to: "site/css"
+               }
+             } == Cli.get_assets(mod, config)
     end
   end
 end

@@ -1,10 +1,24 @@
 defmodule Lambdapad.Config do
+  @moduledoc """
+  Handle the configuration for Lambdapad. The configuration is provided
+  inside of the configuration files and it could be defined as TOML or
+  Eterm at the moment.
+  """
   alias Lambdapad.Cli
 
-  def lambdapad_metainfo() do
-    spec = unquote(Lambdapad.MixProject.project())
+  @doc """
+  Get information about Lambdapad and when the command was launched.
+  This information is useful to know the last time a page was rendered.
+  """
+  def lambdapad_metainfo do
+    spec =
+      unquote(
+        Keyword.take(Lambdapad.MixProject.project(), ~w[name version description homepage_url]a)
+      )
+
     today = Date.utc_today()
     months = ~w[Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec]
+
     %{
       "lambdapad" => %{
         "name" => spec[:name],
@@ -21,39 +35,36 @@ defmodule Lambdapad.Config do
     }
   end
 
-  def valid_configs(), do: ~w[ toml eterm ]a
+  def valid_configs do
+    for "Elixir.Lambdapad.Config." <> mod <-
+          Enum.map(:code.all_loaded(), fn {mod, _} -> to_string(mod) end) do
+      mod
+      |> String.downcase()
+      |> String.to_atom()
+    end
+  end
 
   def init(configs, workdir) when is_list(configs) do
-    Enum.reduce(configs, {:ok, %{}}, fn(config, {:ok, acc}) ->
+    Enum.reduce(configs, {:ok, %{}}, fn config, {:ok, acc} ->
       {:ok, cfg} = init(config, workdir)
       {:ok, Map.merge(acc, cfg)}
     end)
   end
 
-  def init(%{format: :toml, from: file} = config, workdir) do
-    Cli.print_level2("Parsing (TOML)", file)
-    case Toml.decode_file(Path.join([workdir, file])) do
-      {:ok, config_data} ->
-        config_data = process_data(config_data, config, workdir)
-        Cli.print_level2_ok()
-        if var_name = config[:var_name] do
-          {:ok, %{var_name => config_data}}
-        else
-          {:ok, config_data}
-        end
+  @type filename() :: String.t()
+  @type workdir() :: String.t()
 
-      {:error, error} ->
-        Cli.print_error("reading #{file}: #{inspect(error)}")
-        System.halt(1)
-    end
-  end
+  @callback read_data(filename(), workdir()) :: {:ok, map()} | {:error, atom()}
 
-  def init(%{format: :eterm, from: file} = config, workdir) do
-    Cli.print_level2("Parsing (Erlang)", file)
-    case :file.script(Path.join([workdir, file])) do
+  def init(%{format: format, from: file} = config, workdir) do
+    module = Module.concat([__MODULE__, Macro.camelize(to_string(format))])
+    Cli.print_level2("Parsing (#{format})", file)
+
+    case module.read_data(file, workdir) do
       {:ok, config_data} when is_map(config_data) ->
         config_data = process_data(config_data, config, workdir)
         Cli.print_level2_ok()
+
         if var_name = config[:var_name] do
           {:ok, %{var_name => config_data}}
         else
@@ -70,7 +81,8 @@ defmodule Lambdapad.Config do
     end
   end
 
-  defp process_data(config_data, %{transform: transform}, workdir) when is_function(transform, 1) do
+  defp process_data(config_data, %{transform: transform}, workdir)
+       when is_function(transform, 1) do
     config_data
     |> Map.put("workdir", workdir)
     |> transform.()
@@ -88,6 +100,7 @@ defmodule Lambdapad.Config do
   defp string_keys(map) when is_map(map) do
     for {key, value} <- map, into: %{}, do: {to_string(key), string_keys(value)}
   end
+
   defp string_keys(other), do: other
 
   def to_proplist(%Date{day: day, month: month, year: year}) do

@@ -1,4 +1,4 @@
-doc """
+doc("""
 Last Update Extension
 0.1
 
@@ -40,17 +40,20 @@ To use the transform, you have to add it:
 As you can see, it's in the `transform_on_config` setting.
 
 Enjoy!
-"""
+""")
 
 transform "last_update" do
-  set on: :config
-  set run: fn(config, posts) ->
-    last_update =
-      posts
-      |> Enum.map(& &1["updated"] || &1["date"])
-      |> Enum.sort(:desc)
-      |> List.first()
+  set(on: :config)
 
-    Map.put(config, "last_update", last_update)
-  end
+  set(
+    run: fn config, posts ->
+      last_update =
+        posts
+        |> Enum.map(&(&1["updated"] || &1["date"]))
+        |> Enum.sort(:desc)
+        |> List.first()
+
+      Map.put(config, "last_update", last_update)
+    end
+  )
 end

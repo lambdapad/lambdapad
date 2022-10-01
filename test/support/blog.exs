@@ -2,56 +2,68 @@ import Lambdapad
 
 blog do
   config do
-    set format: :eterm
-    set from: "blog.config"
-    set var_name: "blog"
+    set(format: :eterm)
+    set(from: "blog.config")
+    set(var_name: "blog")
   end
 
   assets "files" do
-    set from: "assets/*.css"
-    set to: "site/css"
+    set(from: "assets/*.css")
+    set(to: "site/css")
   end
 
-  source posts: "posts/**/*.md"
+  source(posts: "posts/**/*.md")
 
   widget "recent posts" do
-    set from: :posts
-    set var_name: "posts"
-    set index: true
-    set template: "recent-posts.html"
-    set env: %{
-      site_root: "/"
-    }
+    set(from: :posts)
+    set(var_name: "posts")
+    set(index: true)
+    set(template: "recent-posts.html")
+
+    set(
+      env: %{
+        site_root: "/"
+      }
+    )
   end
 
   pages "about" do
-    set from: "snippets/about.md"
-    set var_name: "about"
-    set template: "index.html"
-    set uri: "/about"
-    set env: %{
-      site_root: "/"
-    }
+    set(from: "snippets/about.md")
+    set(var_name: "about")
+    set(template: "index.html")
+    set(uri: "/about")
+
+    set(
+      env: %{
+        site_root: "/"
+      }
+    )
   end
 
   pages "posts" do
-    set from: :posts
-    set template: "posts.html"
-    set index: true
-    set var_name: "posts"
-    set uri: "/posts"
-    set env: %{
-      site_root: "/"
-    }
+    set(from: :posts)
+    set(template: "posts.html")
+    set(index: true)
+    set(var_name: "posts")
+    set(uri: "/posts")
+
+    set(
+      env: %{
+        site_root: "/"
+      }
+    )
   end
 
   pages "individual posts" do
-    set from: :posts
-    set template: "post.html"
-    set var_name: "post"
-    set uri: "/posts/{{ post.id }}"
-    set env: %{
-      site_root: "/"
-    }
+    set(from: :posts)
+    set(template: "post.html")
+    set(var_name: "post")
+    set(uri: "/posts/{{ post.id }}")
+
+    set(
+      env: %{
+        site_root: "/"
+      }
+    )
   end
 end

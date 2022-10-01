@@ -17,6 +17,20 @@ defmodule Lambdapad.MixProject do
   end
 
   defp escript do
+    if Mix.env() != :prod and is_nil(System.get_env("IGNORE_BUILD_WARNING")) do
+      IO.warn(
+        """
+        This script generated is including dependencies like ex_check,
+        dialyxir, credo, and all of the development tools which aren't
+        needed for production, use this command instead for generating
+        the correct build:
+
+        MIX_ENV=prod mix escript.build
+        """,
+        []
+      )
+    end
+
     [
       main_module: Lambdapad.Cli,
       name: "lpad"
@@ -32,13 +46,19 @@ defmodule Lambdapad.MixProject do
   defp deps do
     [
       {:earmark, "~> 1.4"},
-      {:earmark_parser, github: "manuel-rubio/earmark_parser", override: true},
       {:erlydtl, github: "manuel-rubio/erlydtl"},
       {:pockets, "~> 1.0"},
       {:toml, "~> 0.6"},
       {:optimus, "~> 0.2"},
       {:cowboy, "~> 2.8"},
-      {:floki, "~> 0.30"}
+      {:floki, "~> 0.30"},
+
+      # dependencies only for check, use `MIX_ENV=prod mix escript.build` for
+      # generating the production script avoiding including these.
+      {:ex_check, "~> 0.14", runtime: false, only: :dev},
+      {:dialyxir, "~> 1.2", runtime: false, only: :dev},
+      {:doctor, "~> 0.19", runtime: false, only: :dev},
+      {:credo, "~> 1.6", runtime: false, only: :dev}
     ]
   end
 end

@@ -1,5 +1,10 @@
 defmodule Lambdapad.Cli.Erl do
-
+  @moduledoc """
+  Performs the compilation of the Erlang configuration file. The
+  `index.erl` file, that's the file expected to be loaded as the
+  code from Erlang, it's compiled on-the-fly and the defined
+  functions are used for the configuration.
+  """
   alias Lambdapad.Cli
 
   @compiler_opts ~w[
@@ -9,10 +14,12 @@ defmodule Lambdapad.Cli.Erl do
     export_all
   ]a
 
-  @valid_configs Lambdapad.Config.valid_configs()
-
+  @doc """
+  Performs the compilation of the Erlang code.
+  """
   def compile(index_file) do
     :code.purge(:index)
+
     case :compile.file(String.to_charlist(index_file), @compiler_opts) do
       {:ok, mod, []} ->
         {:module, ^mod} = :code.load_file(mod)
@@ -22,11 +29,24 @@ defmodule Lambdapad.Cli.Erl do
         for warn <- warns do
           Cli.print_level2_warn(warn)
         end
+
         {:ok, {__MODULE__, mod}}
 
-      error ->
-        # FIXME process errors in a correct way
-        Cli.print_error("#{inspect(error)}")
+      {:error, errors, warns} ->
+        IO.puts("\n---")
+
+        for warn <- warns do
+          Cli.print_level2_warn(warn)
+        end
+
+        for {filename, lines} <- errors do
+          Cli.print_error("Found #{length(lines)} error(s) in #{filename}")
+
+          for {{row, col}, error, description} <- lines do
+            Cli.print_level2_error(filename, row, col, error, description)
+          end
+        end
+
         System.halt(1)
     end
   end
@@ -35,18 +55,33 @@ defmodule Lambdapad.Cli.Erl do
     if function_exported?(mod, :config, 1) do
       for config <- mod.config(rawargs), do: translate_config(config)
     else
-      [%{
-        format: :eterm,
-        from: "lambdapad.config"
-      }]
+      [
+        %{
+          format: :eterm,
+          from: "lambdapad.config"
+        }
+      ]
     end
   end
 
-  defp translate_config({key, {kind, file}}) when kind in @valid_configs do
+  defp assert_config_type(kind) do
+    unless kind in Lambdapad.Config.valid_configs() do
+      raise """
+      The kind #{kind} isn't a valid configuration type, the valid
+      configuration types are:
+
+      #{inspect(Lambdapad.Config.valid_configs())}
+      """
+    end
+  end
+
+  defp translate_config({key, {kind, file}}) do
+    assert_config_type(kind)
     %{format: kind, from: to_string(file), var_name: to_string(key)}
   end
 
-  defp translate_config({kind, file}) when kind in @valid_configs do
+  defp translate_config({kind, file}) do
+    assert_config_type(kind)
     %{format: :eterm, from: to_string(file)}
   end
 
@@ -54,6 +89,7 @@ defmodule Lambdapad.Cli.Erl do
     if function_exported?(mod, :widgets, 1) do
       for widget <- mod.widgets(config), into: %{} do
         {key, value} = translate_page_data(widget)
+
         {
           key,
           value
@@ -112,11 +148,12 @@ defmodule Lambdapad.Cli.Erl do
         uri: to_string(uri),
         template: to_string(template),
         var_name: to_string(var_name),
-        from: cond do
-          is_nil(from) -> nil
-          is_list(from) -> to_string(from)
-          :else -> from
-        end
+        from:
+          cond do
+            is_nil(from) -> nil
+            is_list(from) -> to_string(from)
+            :else -> from
+          end
       })
     }
   end
@@ -142,11 +179,12 @@ defmodule Lambdapad.Cli.Erl do
         var_name: to_string(var_name),
         uri: to_string(uri),
         template: to_string(template),
-        from: cond do
-          is_nil(from) -> nil
-          is_list(from) -> to_string(from)
-          :else -> from
-        end
+        from:
+          cond do
+            is_nil(from) -> nil
+            is_list(from) -> to_string(from)
+            :else -> from
+          end
       })
     }
   end

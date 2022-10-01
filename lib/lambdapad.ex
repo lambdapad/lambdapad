@@ -5,6 +5,7 @@ defmodule Lambdapad do
   defmacro blog(do: block) do
     quote do
       defmodule Lambdapad.Blog do
+        @moduledoc false
         use Lambdapad
 
         @content nil
@@ -17,59 +18,33 @@ defmodule Lambdapad do
         Module.register_attribute(Lambdapad.Blog, :assets, accumulate: true)
         unquote(block)
 
-        def sources(), do: @source
+        @doc false
+        def sources, do: @source
 
-        def configs() do
-          for name <- @configs, do: __MODULE__.config(name)
-        end
+        @doc false
+        def configs, do: Lambdapad.Blog.Base.configs(@configs)
 
-        def transforms() do
-          for name <- @transforms, into: %{} do
-            {name, transform(name)}
-          end
-        end
+        @doc false
+        def transforms, do: Lambdapad.Blog.Base.transforms(@transforms)
 
-        def checks() do
-          for name <- @checks, into: %{} do
-            {name, check(name)}
-          end
-        end
+        @doc false
+        def checks, do: Lambdapad.Blog.Base.checks(@checks)
 
-        def widgets() do
-          for name <- @widgets, into: %{} do
-            {name, widget(name)}
-          end
-        end
+        @doc false
+        def widgets, do: Lambdapad.Blog.Base.widgets(@widgets)
 
-        defp priority(:low), do: 100
-        defp priority(:high), do: 0
-        defp priority(_), do: 50
+        @doc false
+        def pages, do: Lambdapad.Blog.Base.pages(@pages)
 
-        def pages() do
-          pages =
-            for name <- @pages do
-              {name, pages(name)}
-            end
-
-          if Enum.any?(pages, fn {_, data} -> not is_nil(data["priority"]) end) do
-            Enum.sort_by(pages, fn {key, data} -> priority(data["priority"]) end)
-          else
-            pages
-          end
-        end
-
-        def assets() do
-          assets = if @assets == [], do: ["general"], else: @assets
-          for name <- assets, into: %{} do
-            {name, __MODULE__.assets(name)}
-          end
-        end
+        @doc false
+        def assets, do: Lambdapad.Blog.Base.assets(@assets)
       end
     end
   end
 
   defmacro __using__(_opts) do
     quote do
+      @doc false
       def config("default") do
         %{
           format: :toml,
@@ -78,26 +53,35 @@ defmodule Lambdapad do
         }
       end
 
+      @doc false
       def assets("general") do
         %{
           from: "assets/**",
           to: "site/"
         }
       end
+
+      @doc false
       def assets(_), do: nil
 
+      @doc false
       def sources(), do: %{}
 
+      @doc false
       def source(key) do
         sources()[key]
       end
 
+      @doc false
       def transform(_), do: nil
 
+      @doc false
       def check(_), do: nil
 
+      @doc false
       def widget(_), do: nil
 
+      @doc false
       def pages(_), do: nil
 
       defp translate_from(%{from: name} = data) when is_atom(name) do
@@ -137,15 +121,13 @@ defmodule Lambdapad do
         }
       end
 
-      defoverridable [
-        config: 1,
-        assets: 1,
-        sources: 0,
-        transform: 1,
-        check: 1,
-        widget: 1,
-        pages: 1
-      ]
+      defoverridable config: 1,
+                     assets: 1,
+                     sources: 0,
+                     transform: 1,
+                     check: 1,
+                     widget: 1,
+                     pages: 1
     end
   end
 
@@ -153,10 +135,12 @@ defmodule Lambdapad do
     quote do
       Module.put_attribute(__MODULE__, :content, :config)
       Module.put_attribute(__MODULE__, :configs, unquote(name))
+
       def config(unquote(name)) do
         var!(conf, Lambdapad.Blog) = %{}
         Map.merge(config_default(), unquote(block))
       end
+
       Module.put_attribute(__MODULE__, :content, nil)
     end
   end
@@ -165,10 +149,12 @@ defmodule Lambdapad do
     quote do
       Module.put_attribute(__MODULE__, :content, :transforms)
       Module.put_attribute(__MODULE__, :transforms, unquote(name))
+
       def transform(unquote(name)) do
         var!(conf, Lambdapad.Blog) = %{}
         unquote(block)
       end
+
       Module.put_attribute(__MODULE__, :content, nil)
     end
   end
@@ -177,10 +163,12 @@ defmodule Lambdapad do
     quote do
       Module.put_attribute(__MODULE__, :content, :checks)
       Module.put_attribute(__MODULE__, :checks, unquote(name))
+
       def check(unquote(name)) do
         var!(conf, Lambdapad.Blog) = %{}
         unquote(block)
       end
+
       Module.put_attribute(__MODULE__, :content, nil)
     end
   end
@@ -189,11 +177,14 @@ defmodule Lambdapad do
     quote do
       Module.put_attribute(__MODULE__, :content, :widgets)
       Module.put_attribute(__MODULE__, :widgets, unquote(name))
+
       def widget(unquote(name)) do
         var!(conf, Lambdapad.Blog) = %{}
+
         Map.merge(widgets_default(), unquote(block))
         |> translate_from()
       end
+
       Module.put_attribute(__MODULE__, :content, nil)
     end
   end
@@ -202,11 +193,14 @@ defmodule Lambdapad do
     quote do
       Module.put_attribute(__MODULE__, :content, :assets)
       Module.put_attribute(__MODULE__, :assets, unquote(name))
+
       def assets(unquote(name)) do
         var!(conf, Lambdapad.Blog) = %{}
+
         unquote(block)
         |> translate_from()
       end
+
       Module.put_attribute(__MODULE__, :content, nil)
     end
   end
@@ -215,10 +209,12 @@ defmodule Lambdapad do
     quote do
       Module.put_attribute(__MODULE__, :content, :assets)
       Module.put_attribute(__MODULE__, :assets, "general")
+
       def assets("general") do
         var!(conf, Lambdapad.Blog) = %{}
         unquote(block)
       end
+
       Module.put_attribute(__MODULE__, :content, nil)
     end
   end
@@ -227,11 +223,14 @@ defmodule Lambdapad do
     quote do
       Module.put_attribute(__MODULE__, :content, :pages)
       Module.put_attribute(__MODULE__, :pages, unquote(name))
+
       def pages(unquote(name)) do
         var!(conf, Lambdapad.Blog) = %{}
+
         Map.merge(pages_default(), unquote(block))
         |> translate_from()
       end
+
       Module.put_attribute(__MODULE__, :content, nil)
     end
   end
@@ -245,20 +244,28 @@ defmodule Lambdapad do
   defmacro set([{key, value}]) do
     quote do
       config = var!(conf, Lambdapad.Blog)
-      new_conf = cond do
-        @content == :config ->
-          Map.put(config, unquote(key), unquote(value))
-        @content == :assets ->
-          Map.put(config, unquote(key), unquote(value))
-        @content == :checks ->
-          Map.put(config, unquote(key), unquote(value))
-        @content == :transforms ->
-          Map.put(config, unquote(key), unquote(value))
-        @content == :widgets ->
-          Map.put(config, unquote(key), unquote(value))
-        @content == :pages ->
-          Map.put(config, unquote(key), unquote(value))
-      end
+
+      new_conf =
+        cond do
+          @content == :config ->
+            Map.put(config, unquote(key), unquote(value))
+
+          @content == :assets ->
+            Map.put(config, unquote(key), unquote(value))
+
+          @content == :checks ->
+            Map.put(config, unquote(key), unquote(value))
+
+          @content == :transforms ->
+            Map.put(config, unquote(key), unquote(value))
+
+          @content == :widgets ->
+            Map.put(config, unquote(key), unquote(value))
+
+          @content == :pages ->
+            Map.put(config, unquote(key), unquote(value))
+        end
+
       var!(conf, Lambdapad.Blog) = new_conf
     end
   end

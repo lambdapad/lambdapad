@@ -1,4 +1,8 @@
 defmodule Lambdapad.Generate.Pages do
+  @moduledoc """
+  Generate the pages information to be rendered.
+  """
+
   alias Lambdapad.{Cli, Config, Generate, Html}
   alias Lambdapad.Generate.Sources
 
@@ -8,7 +12,7 @@ defmodule Lambdapad.Generate.Pages do
       page_data = Map.put(page_data, "name", name)
       format = page_data[:format]
       template_name = page_data[:template]
-      render_mod = Html.init(name, template_name, workdir, format)
+      render_mod = Html.init(:page, name, template_name, workdir, format)
 
       pages =
         page_data
@@ -27,6 +31,7 @@ defmodule Lambdapad.Generate.Pages do
   end
 
   defp process_transforms_on_item(nil, _mod, _config, _page_data), do: nil
+
   defp process_transforms_on_item(pages, mod, config, page_data) do
     if transforms = Generate.resolve_transforms_on_item(mod, page_data) do
       for page <- pages do
@@ -38,6 +43,7 @@ defmodule Lambdapad.Generate.Pages do
   end
 
   defp process_transforms_on_page(nil, _mod, _config, _page_data), do: nil
+
   defp process_transforms_on_page(pages, mod, config, page_data) do
     if transforms = Generate.resolve_transforms_on_page(mod, page_data) do
       transforms.(pages, config)
@@ -47,6 +53,7 @@ defmodule Lambdapad.Generate.Pages do
   end
 
   defp process_transforms_on_config(config, _mod, nil, _page_data), do: config
+
   defp process_transforms_on_config(config, mod, pages, page_data) do
     if transforms = Generate.resolve_transforms_on_config(mod, page_data) do
       transforms.(config, pages)
@@ -57,6 +64,7 @@ defmodule Lambdapad.Generate.Pages do
 
   defp process_transforms_to_persist(mod, %{} = vars, %{} = page_data) do
     vars = Map.put(vars, "var_name", page_data[:var_name])
+
     if transforms = Generate.resolve_transforms_to_persist(mod, page_data) do
       transforms.(%{}, vars)
     else
@@ -78,11 +86,19 @@ defmodule Lambdapad.Generate.Pages do
     links = gather_links(iodata)
 
     config
-    |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+    |> Map.update(:url_data, [{url, url_data}], &[{url, url_data} | &1])
     |> Map.update(:links, links, &MapSet.union(&1, links))
   end
 
-  defp generate_pages(pages, config, name, %{index: true, paginated: false} = page_data, output_dir, render_mod, mod) do
+  defp generate_pages(
+         pages,
+         config,
+         name,
+         %{index: true, paginated: false} = page_data,
+         output_dir,
+         render_mod,
+         mod
+       ) do
     plist_config = Config.to_proplist(config)
     vars = Generate.process_vars(page_data, pages)
     env_data = Enum.to_list(page_data[:env] || [])
@@ -92,16 +108,24 @@ defmodule Lambdapad.Generate.Pages do
     Cli.print_level3(relative_file)
     iodata = Html.render(vars ++ env_data, render_mod, plist_config)
     File.write!(file, iodata)
-    vars = Map.new([{"__file__", file}|vars])
+    vars = Map.new([{"__file__", file} | vars])
     url_data = process_transforms_to_persist(mod, vars, page_data)
     links = gather_links(iodata)
 
     config
-    |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+    |> Map.update(:url_data, [{url, url_data}], &[{url, url_data} | &1])
     |> Map.update(:links, links, &MapSet.union(&1, links))
   end
 
-  defp generate_pages(pages, config, name, %{index: true} = page_data, output_dir, render_mod, mod) do
+  defp generate_pages(
+         pages,
+         config,
+         name,
+         %{index: true} = page_data,
+         output_dir,
+         render_mod,
+         mod
+       ) do
     items_per_page =
       case page_data[:paginated] do
         pg when is_function(pg) -> pg.(pages, config)
@@ -111,6 +135,7 @@ defmodule Lambdapad.Generate.Pages do
     page_items = Enum.chunk_every(pages, items_per_page)
     total_pages = length(page_items)
     pager_data = generate_pager_data(page_items, page_data, name, config)
+
     Enum.reduce(1..total_pages, config, fn index, cfg ->
       pager = get_pager(index, total_pages, pager_data)
       vars = pager_data[index][:vars]
@@ -122,12 +147,12 @@ defmodule Lambdapad.Generate.Pages do
       plist_config = Config.to_proplist(config)
       iodata = Html.render(vars ++ pager ++ env_data, render_mod, plist_config)
       File.write!(file, iodata)
-      vars = Map.new([{"__file__", file}|vars])
+      vars = Map.new([{"__file__", file} | vars])
       url_data = process_transforms_to_persist(mod, vars, page_data)
       links = gather_links(iodata)
 
       cfg
-      |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+      |> Map.update(:url_data, [{url, url_data}], &[{url, url_data} | &1])
       |> Map.update(:links, links, &MapSet.union(&1, links))
     end)
   end
@@ -144,12 +169,12 @@ defmodule Lambdapad.Generate.Pages do
         plist_config = Config.to_proplist(config)
         iodata = Html.render(vars ++ env_data, render_mod, plist_config)
         File.write!(file, iodata)
-        vars = Map.new([{"__file__", file}|vars])
+        vars = Map.new([{"__file__", file} | vars])
         url_data = process_transforms_to_persist(mod, vars, page_data)
         links = gather_links(iodata)
 
         cfg
-        |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+        |> Map.update(:url_data, [{url, url_data}], &[{url, url_data} | &1])
         |> Map.update(:links, links, &MapSet.union(&1, links))
 
       data, cfg when is_map(data) ->
@@ -162,19 +187,21 @@ defmodule Lambdapad.Generate.Pages do
         plist_config = Config.to_proplist(config)
         iodata = Html.render(vars ++ env_data, render_mod, plist_config)
         File.write!(file, iodata)
-        vars = Map.new([{"__file__", file}|vars])
+        vars = Map.new([{"__file__", file} | vars])
         url_data = process_transforms_to_persist(mod, vars, page_data)
         links = gather_links(iodata)
 
         cfg
-        |> Map.update(:url_data, [{url, url_data}], &[{url, url_data}|&1])
+        |> Map.update(:url_data, [{url, url_data}], &[{url, url_data} | &1])
         |> Map.update(:links, links, &MapSet.union(&1, links))
     end)
   end
 
   defp gather_links(html) do
     {:ok, document} = Floki.parse_document(html)
-    for {"a", attrs, _} <- Floki.find(document, "a"), not is_nil(List.keyfind(attrs, "href", 0)) do
+
+    for {"a", attrs, _} <- Floki.find(document, "a"),
+        not is_nil(List.keyfind(attrs, "href", 0)) do
       {"href", link} = List.keyfind(attrs, "href", 0)
       link
     end
@@ -185,27 +212,35 @@ defmodule Lambdapad.Generate.Pages do
     for {posts, index} <- Enum.with_index(page_items, 1), into: %{} do
       vars = Generate.process_vars(page_data, posts, index)
       url = Generate.resolve_uri(config, name, page_data[:uri], vars, index)
-      {index, %{
-        posts: posts,
-        vars: vars,
-        url: url
-      }}
+
+      {index,
+       %{
+         posts: posts,
+         vars: vars,
+         url: url
+       }}
     end
   end
 
   defp get_pager(index, index, _pager_data) when index == 1 do
     [{"pager", []}]
   end
+
   defp get_pager(index, index, pager_data) do
     [{"pager", [{"prev_url", pager_data[index - 1][:url]}]}]
   end
+
   defp get_pager(1 = index, _total_pages, pager_data) do
     [{"pager", [{"next_url", pager_data[index + 1][:url]}]}]
   end
+
   defp get_pager(index, _total_pages, pager_data) do
-    [{"pager", [
-      {"next_url", pager_data[index + 1][:url]},
-      {"prev_url", pager_data[index - 1][:url]}
-    ]}]
+    [
+      {"pager",
+       [
+         {"next_url", pager_data[index + 1][:url]},
+         {"prev_url", pager_data[index - 1][:url]}
+       ]}
+    ]
   end
 end
