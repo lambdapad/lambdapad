@@ -6,6 +6,7 @@ defmodule Lambdapad.Generate.Pages do
   alias Lambdapad.{Cli, Config, Generate, Html}
   alias Lambdapad.Generate.Sources
 
+  @doc false
   def process(pages, cfg, mod, workdir, output_dir) do
     Enum.reduce(pages, cfg, fn {name, page_data}, config ->
       Cli.print_level2("Pages", name)

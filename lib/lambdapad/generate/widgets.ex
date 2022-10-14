@@ -13,6 +13,7 @@ defmodule Lambdapad.Generate.Widgets do
   alias Lambdapad.{Cli, Config, Generate, Html}
   alias Lambdapad.Generate.Sources
 
+  @doc false
   def process(widgets, config, mod, workdir) do
     Enum.reduce(widgets, %{}, fn {name, widget_data}, acc ->
       Cli.print_level2("Widget", name)

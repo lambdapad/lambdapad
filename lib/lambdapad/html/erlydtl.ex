@@ -17,7 +17,7 @@ defmodule Lambdapad.Html.Erlydtl do
     type = Macro.camelize(to_string(type))
     module = Module.concat([__MODULE__, type, Macro.camelize(name)])
 
-    if function_exported?(module, :__info__, 1) do
+    if Code.ensure_loaded?(module) do
       module
     else
       templates_dir = Path.join([workdir, "templates"])

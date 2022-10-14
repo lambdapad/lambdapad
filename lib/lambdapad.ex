@@ -245,27 +245,8 @@ defmodule Lambdapad do
     quote do
       config = var!(conf, Lambdapad.Blog)
 
-      new_conf =
-        cond do
-          @content == :config ->
-            Map.put(config, unquote(key), unquote(value))
-
-          @content == :assets ->
-            Map.put(config, unquote(key), unquote(value))
-
-          @content == :checks ->
-            Map.put(config, unquote(key), unquote(value))
-
-          @content == :transforms ->
-            Map.put(config, unquote(key), unquote(value))
-
-          @content == :widgets ->
-            Map.put(config, unquote(key), unquote(value))
-
-          @content == :pages ->
-            Map.put(config, unquote(key), unquote(value))
-        end
-
+      true = @content in ~w[ config assets checks transforms widgets pages ]a
+      new_conf = Map.put(config, unquote(key), unquote(value))
       var!(conf, Lambdapad.Blog) = new_conf
     end
   end

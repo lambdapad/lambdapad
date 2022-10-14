@@ -11,10 +11,13 @@ defmodule Lambdapad.Http do
   """
   require Logger
 
+  @doc """
+  Start the HTTP server using cowboy.
+  """
   def start_server(port, dir) do
     IO.puts(["HTTP Server on ", IO.ANSI.yellow(), "http://localhost:#{port}/", IO.ANSI.reset()])
     IO.puts(["Reading from ", IO.ANSI.green(), dir, IO.ANSI.reset()])
-    opts = %{:env => %{:dispatch => dispatch(dir)}}
+    opts = %{env: %{dispatch: dispatch(dir)}}
     port_info = [:inet, port: port]
 
     case :cowboy.start_clear(__MODULE__, port_info, opts) do
@@ -32,6 +35,7 @@ defmodule Lambdapad.Http do
     )
   end
 
+  @doc false
   def init(%{peer: {remote_ip, _remote_port}, path: path} = req, [dir]) do
     file = Path.join([dir, path])
 

@@ -17,6 +17,7 @@ defmodule Lambdapad.Generate.Assets do
   """
   alias Lambdapad.Cli
 
+  @doc false
   def process(assets, workdir) do
     Enum.each(assets, fn {name, data} ->
       Cli.print_level2("Assets", name)

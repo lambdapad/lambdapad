@@ -12,16 +12,19 @@ defmodule Lambdapad.Cli do
   5. Processing the checks.
   6. Processing the assets.
   """
-  alias Lambdapad.{Cli, Config, Generate, Http}
-  alias Lambdapad.Generate.Sources
+  alias Lambdapad.Cli.Command
+  alias Lambdapad.Config
 
-  @default_port 8080
   @default_verbosity 1
 
   defp absname("."), do: File.cwd!()
   defp absname(dir), do: Path.absname(dir)
 
-  defp cwd!(lambdapad_file) do
+  @doc """
+  Returns the absolute path for the current working path.
+  """
+  @spec cwd!(String.t()) :: String.t()
+  def cwd!(lambdapad_file) do
     unless File.exists?(lambdapad_file) do
       IO.puts("File #{lambdapad_file} not found.")
       System.halt(1)
@@ -30,6 +33,12 @@ defmodule Lambdapad.Cli do
     absname(Path.dirname(lambdapad_file))
   end
 
+  @doc """
+  Gives the default file depending on the current directory. If the file
+  `index.erl` exists, then it's returned as the default file, otherwise the
+  `lambdapad.exs` is returned.
+  """
+  @spec default_file() :: String.t()
   def default_file do
     if File.exists?("index.erl") do
       "index.erl"
@@ -38,6 +47,7 @@ defmodule Lambdapad.Cli do
     end
   end
 
+  @doc false
   @spec main(any) :: none | :ok
   def main(args) do
     args
@@ -45,223 +55,60 @@ defmodule Lambdapad.Cli do
     |> commands(args)
   end
 
-  def get_configs({calling_mod, _} = mod, rawargs), do: calling_mod.get_configs(mod, rawargs)
-
-  def get_widgets({calling_mod, _} = mod, config), do: calling_mod.get_widgets(mod, config)
-
-  def get_pages({calling_mod, _} = mod, config), do: calling_mod.get_pages(mod, config)
-
-  def get_assets({calling_mod, _} = mod, config), do: calling_mod.get_assets(mod, config)
-
-  def apply_transform({calling_mod, _} = mod, items), do: calling_mod.apply_transform(mod, items)
-
-  def get_checks({calling_mod, _} = mod), do: calling_mod.get_checks(mod)
-
-  defp compile(filename) do
-    cond do
-      String.ends_with?(filename, ".exs") ->
-        Cli.Exs.compile(filename)
-
-      String.ends_with?(filename, ".erl") ->
-        Cli.Erl.compile(filename)
-
-      :else ->
-        IO.puts("File #{filename} unknown.")
-        System.halt(1)
-    end
+  defp commands(%_{} = params, rawargs) do
+    commands({[:compile], params}, rawargs)
   end
 
-  defp commands(%_{args: %{infile: nil}} = params, rawargs) do
-    commands(%{params | args: %{infile: default_file()}}, rawargs)
+  defp commands({[subcommand], %_{} = params}, rawargs) do
+    data =
+      params.args
+      |> Map.merge(params.flags)
+      |> Map.merge(params.options)
+      |> Map.put(:infile, params.args[:infile] || default_file())
+      |> Map.put(:rawargs, rawargs)
+
+    command(to_string(subcommand), data)
   end
 
-  defp commands(%_{args: %{infile: filename}, flags: %{verbosity: loglevel}}, rawargs) do
-    workdir = cwd!(filename)
+  defp command(subcommand, data) do
+    subcommand_str = Macro.camelize(String.replace(subcommand, "-", "_"))
+    mod = Module.concat([Lambdapad.Cli.Command, subcommand_str])
+    Code.ensure_loaded(mod)
 
-    Application.put_env(:lambdapad, :workdir, workdir)
-    Application.put_env(:lambdapad, :loglevel, loglevel)
-    Sources.init()
-
-    gt = print_level1("Reading configuration", filename)
-
-    t = print_level2("Compiling", filename)
-    {:ok, mod} = compile(filename)
-    print_level2_ok()
-
-    {:ok, config} = Config.init(get_configs(mod, rawargs), workdir)
-
-    print_level2("Create directory")
-    relative_output_dir = config["blog"]["output_dir"] || "site"
-    print_level3(relative_output_dir)
-    output_dir = Path.join([workdir, relative_output_dir])
-    :ok = File.mkdir_p(output_dir)
-    print_level2_ok()
-    print_level1_ok(t)
-
-    t = print_level1("Processing widgets")
-    widgets = Generate.Widgets.process(get_widgets(mod, config), config, mod, workdir)
-    config = Map.put(config, "widgets", widgets)
-    print_level1_ok(t)
-
-    t = print_level1("Processing pages")
-    config = Generate.Pages.process(get_pages(mod, config), config, mod, workdir, output_dir)
-    print_level1_ok(t)
-
-    t = print_level1("Processing checks")
-    apply_finish_checks(get_checks(mod), config)
-    print_level1_ok(t)
-
-    t = print_level1("Processing assets")
-    Generate.Assets.process(get_assets(mod, config), workdir)
-    print_level1_ok(t)
-
-    gt = System.system_time(:millisecond) - gt
-    IO.puts([IO.ANSI.blue(), "Done (#{gt / 1000}s)", IO.ANSI.reset()])
-    Sources.terminate()
-    :ok
-  end
-
-  defp commands({subcommand, %_{args: %{infile: nil}} = params}, rawargs) do
-    commands({subcommand, %{params | args: %{infile: default_file()}}}, rawargs)
-  end
-
-  defp commands({[:clean], %_{args: %{infile: lambdapad_file}}}, rawargs) do
-    workdir = cwd!(lambdapad_file)
-
-    gt = print_level1("Reading configuration", lambdapad_file)
-
-    t = print_level2("Compiling", lambdapad_file)
-    {:ok, mod} = compile(lambdapad_file)
-    print_level2_ok()
-
-    {:ok, config} = Config.init(get_configs(mod, rawargs), workdir)
-    print_level2_ok()
-    print_level1_ok(t)
-
-    dir = Path.join([workdir, config["blog"]["output_dir"] || "site"])
-
-    if File.exists?(dir) do
-      t = print_level1("Remove directory", dir)
-      File.rm_rf!(dir)
-      print_level1_ok(t)
+    if function_exported?(mod, :command, 1) do
+      mod.command(data)
     else
-      print_level1("Doesn't exist", dir)
+      print_error("unknown subcommand #{subcommand}")
+      System.halt(1)
     end
+  end
 
+  @doc """
+  Prints the `Done` message with the corresponding time spent.
+  """
+  @spec done(pos_integer()) :: :ok
+  def done(gt) do
     gt = System.system_time(:millisecond) - gt
-    IO.puts([IO.ANSI.blue(), "Done (#{gt / 1000}s)", IO.ANSI.reset()])
-    :ok
+    :ok = IO.puts([IO.ANSI.blue(), "Done (#{gt / 1000}s)", IO.ANSI.reset()])
   end
 
-  defp commands(
-         {[:http], %_{args: %{infile: lambdapad_file}, options: %{port: port}} = params},
-         rawargs
-       ) do
-    workdir = cwd!(lambdapad_file)
-
-    {:ok, mod} = compile(lambdapad_file)
-    {:ok, config} = Config.init(get_configs(mod, rawargs), workdir)
-
-    dir = Path.join([workdir, config["blog"]["output_dir"] || "site"])
-    port = port || config["http"]["port"] || @default_port
-
-    Http.start_server(port, dir)
-    IO.puts([IO.ANSI.green(), "options", IO.ANSI.reset(), ": [q]uit or [r]ecompile"])
-
-    if IO.gets("") == "r\n" do
-      commands(%{params | options: %{}, flags: %{verbosity: @default_verbosity}}, rawargs)
-      commands({[:http], params}, rawargs)
-    end
-  end
-
-  defp commands({[:templates], _}, _rawargs) do
-    IO.write("Available templates: ")
-
-    list_templates()
-    |> Enum.join(", ")
-    |> IO.puts()
-  end
-
-  defp commands(
-         {[:new],
-          %_{args: %{name: name}, options: %{template: template}, flags: %{verbosity: loglevel}}},
-         _rawargs
-       ) do
-    if File.exists?(name) do
-      IO.puts([IO.ANSI.red(), "error", IO.ANSI.reset(), ": cannot create #{name} directory."])
-      System.halt(1)
-    end
-
-    files = get_template_files(template)
-
-    unless files do
-      IO.puts([IO.ANSI.red(), "error", IO.ANSI.reset(), ": template #{template} not found."])
-      System.halt(1)
-    end
-
-    Application.put_env(:lambdapad, :loglevel, loglevel)
-
-    t = print_level1("Creating project", name)
-    print_level2("Creating directory", name)
-    File.mkdir_p!(name)
-    print_level2_ok()
-    print_level2("Creating files")
-
-    Enum.each(files, fn {file, content} ->
-      print_level3(file)
-      filepath = Path.join([name, file])
-      dirpath = Path.dirname(filepath)
-      File.mkdir_p!(dirpath)
-      File.write!(filepath, content)
-    end)
-
-    print_level2_ok()
-    print_level1_ok(t)
-  end
-
-  defp apply_finish_checks(checks, config) do
-    Enum.reduce(checks, config, fn
-      {name, %{on: :finish, run: code}}, config ->
-        print_level2("Checking", name)
-        config = code.(config)
-        print_level2_ok()
-        config
-
-      _, config ->
-        config
-    end)
-  end
-
-  @external_resource "templates/*"
-  Module.register_attribute(__MODULE__, :templates, accumulate: true)
-
-  for "templates/" <> template <- Path.wildcard("templates/*") do
-    files =
-      Path.wildcard("templates/#{template}/**")
-      |> Enum.filter(&File.regular?/1)
-
-    @templates {template,
-                for filepath <- files do
-                  file = String.replace_prefix(filepath, "templates/#{template}/", "")
-                  {file, File.read!(filepath)}
-                end}
-  end
-
-  defp get_template_files(template) do
-    case List.keyfind(@templates, template, 0) do
-      {^template, files} -> files
-      nil -> nil
-    end
-  end
-
-  defp list_templates() do
-    for {name, _} <- @templates, do: name
-  end
-
+  @doc """
+  Prints an error passed as parameter ensuring it's printed in the correct
+  color and with the correct format.
+  """
+  @spec print_error(String.t()) :: :ok
   def print_error(msg) do
-    IO.puts([IO.ANSI.red(), " error: ", msg, IO.ANSI.reset()])
+    :ok = IO.puts([IO.ANSI.red(), " error: ", msg, IO.ANSI.reset()])
   end
 
+  @doc """
+  Print a message in the loglevel 1. It's ensuring that it's possible to be
+  printed based on the content of the loglevel information and depending on
+  that information is printing the whole detailed information string
+  passed as parameter or only a blue dot. It returns the current time
+  or timestamp.
+  """
+  @spec print_level1(String.t()) :: pos_integer()
   def print_level1(name) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
       IO.puts([IO.ANSI.blue(), "*", IO.ANSI.reset(), " ", name, ":"])
@@ -279,6 +126,11 @@ defmodule Lambdapad.Cli do
     System.system_time(:millisecond)
   end
 
+  @doc """
+  Similar to `print_level1/1` but it's adding an `annex`, I mean, it's
+  printing extra information. It returns the current time or timestamp.
+  """
+  @spec print_level1(String.t(), String.t()) :: pos_integer()
   def print_level1(name, annex) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
       IO.puts([
@@ -310,6 +162,10 @@ defmodule Lambdapad.Cli do
     System.system_time(:millisecond)
   end
 
+  @doc """
+  Prints the ending of the level1 task. It's getting the initial timestamp
+  to calculate the time spent.
+  """
   def print_level1_ok(t) do
     t = System.system_time(:millisecond) - t
 
@@ -320,6 +176,10 @@ defmodule Lambdapad.Cli do
     end
   end
 
+  @doc """
+  Prints a level2 message if the loglevel is big enough to show it. It's
+  also returning the current time or timestamp.
+  """
   def print_level2(name) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
       IO.write([IO.ANSI.blue(), "  -", IO.ANSI.reset(), " ", name, " "])
@@ -330,6 +190,10 @@ defmodule Lambdapad.Cli do
     System.system_time(:millisecond)
   end
 
+  @doc """
+  Prints the level2 message with an annex if the loglevel is big enough.
+  It's also returning the current time or timestamp.
+  """
   def print_level2(name, annex) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
       IO.write([
@@ -351,6 +215,12 @@ defmodule Lambdapad.Cli do
     System.system_time(:millisecond)
   end
 
+  @doc """
+  Prints the level2 error message with information about the row,
+  col, filename, error name and error description. It's printed
+  because it's in the higher level of the loglevel.
+  """
+  @spec print_level2_error(String.t(), pos_integer(), pos_integer(), iodata(), iodata()) :: :ok
   def print_level2_error(filename, row, col, name, description) do
     IO.write([
       IO.ANSI.reset(),
@@ -359,7 +229,7 @@ defmodule Lambdapad.Cli do
       filename,
       ":#{row}:#{col}: ",
       IO.ANSI.yellow(),
-      to_string(name),
+      name,
       IO.ANSI.reset(),
       ": ",
       description,
@@ -367,6 +237,10 @@ defmodule Lambdapad.Cli do
     ])
   end
 
+  @doc """
+  Prints a level2 warning if the loglevel is big enough to show it.
+  """
+  @spec print_level2_warn(iodata()) :: :ok
   def print_level2_warn(msg) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
       IO.write([
@@ -378,8 +252,14 @@ defmodule Lambdapad.Cli do
         "\n    "
       ])
     end
+
+    :ok
   end
 
+  @doc """
+  Prints a level2 end of task if the loglevel is big enough to show it.
+  """
+  @spec print_level2_ok() :: :ok
   def print_level2_ok() do
     case Application.get_env(:lambdapad, :loglevel, 1) do
       2 -> IO.puts([IO.ANSI.green(), " ok", IO.ANSI.reset()])
@@ -388,6 +268,9 @@ defmodule Lambdapad.Cli do
     end
   end
 
+  @doc """
+  Prints a level3 message if the loglevel is big enough to show it.
+  """
   def print_level3(name) do
     if Application.get_env(:lambdapad, :loglevel, 1) >= 3 do
       IO.write(["\n    ", IO.ANSI.blue(), "- ", IO.ANSI.reset(), name])
@@ -396,10 +279,13 @@ defmodule Lambdapad.Cli do
     end
   end
 
-  defp parse_options(args) do
-    spec = Config.lambdapad_metainfo()["lambdapad"]
-
-    infile = [
+  @doc """
+  Infile configuration option. This configuration is about the default
+  input file we are using to retrieve the information to generate the
+  website.
+  """
+  def get_infile_options do
+    [
       infile: [
         value_name: default_file(),
         help: "Specification to build your web site.",
@@ -407,15 +293,24 @@ defmodule Lambdapad.Cli do
         parser: :string
       ]
     ]
+  end
 
-    verbosity = [
+  @doc """
+  Verbosity configuration parameter.
+  """
+  def get_verbosity_options do
+    [
       verbosity: [
         short: "-v",
         help: "Verbosity level.",
         multiple: true,
-        default: 1
+        default: @default_verbosity
       ]
     ]
+  end
+
+  defp parse_options(args) do
+    spec = Config.lambdapad_metainfo()["lambdapad"]
 
     Optimus.new!(
       description: spec["name"],
@@ -423,64 +318,12 @@ defmodule Lambdapad.Cli do
       about: spec["description"],
       allow_unknown_args: false,
       parse_double_dash: true,
-      args: infile,
-      flags: verbosity,
-      subcommands: [
-        clean: [
-          name: "clean",
-          about: "Remove the output directory if exists",
-          args: infile
-        ],
-        http: [
-          name: "http",
-          about: "HTTP Server for fast checking",
-          args: infile,
-          options: [
-            port: [
-              value_name: "PORT",
-              short: "-p",
-              long: "--port",
-              help: "Port where to listen, by default it is 8080",
-              parser: fn p ->
-                case Integer.parse(p) do
-                  {port, ""} when port >= 1024 -> {:ok, port}
-                  {port, ""} -> {:error, "port must be greater than 1024, #{port} is invalid"}
-                  {_, _} -> {:error, "you have to provide a port number"}
-                end
-              end,
-              required: false
-            ]
-          ]
-        ],
-        templates: [
-          name: "templates",
-          about: "List available templates"
-        ],
-        new: [
-          name: "new",
-          about: "New project based on a template, check templates command",
-          args: [
-            name: [
-              value_name: "name",
-              help: "Specify the name of the project to be created.",
-              parser: :string,
-              required: true
-            ]
-          ],
-          flags: verbosity,
-          options: [
-            template: [
-              value_name: "NAME",
-              short: "-t",
-              long: "--template",
-              help: "Choose the template name (use --list to see available)",
-              parser: :string,
-              required: false,
-              default: "blog"
-            ]
-          ]
-        ]
-      ]
+      args: get_infile_options(),
+      flags: get_verbosity_options(),
+      subcommands:
+        Command.get_modules()
+        |> Enum.map(&Command.get_options/1)
+        |> Enum.reject(&is_nil/1)
     )
     |> Optimus.parse!(args)
   end

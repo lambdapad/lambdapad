@@ -1,4 +1,4 @@
-defmodule Lambdapad.Cli.Erl do
+defmodule Lambdapad.Blog.Erl do
   @moduledoc """
   Performs the compilation of the Erlang configuration file. The
   `index.erl` file, that's the file expected to be loaded as the
@@ -43,7 +43,7 @@ defmodule Lambdapad.Cli.Erl do
           Cli.print_error("Found #{length(lines)} error(s) in #{filename}")
 
           for {{row, col}, error, description} <- lines do
-            Cli.print_level2_error(filename, row, col, error, description)
+            Cli.print_level2_error(filename, row, col, to_string(error), description)
           end
         end
 
@@ -51,7 +51,14 @@ defmodule Lambdapad.Cli.Erl do
     end
   end
 
+  @doc """
+  Retrieve the configuration information based on the module. If that's
+  missing, it's providing the default block information based on the
+  Erlang default configuration for the config file.
+  """
   def get_configs({__MODULE__, mod}, rawargs) do
+    Code.ensure_compiled!(mod)
+
     if function_exported?(mod, :config, 1) do
       for config <- mod.config(rawargs), do: translate_config(config)
     else
@@ -85,7 +92,12 @@ defmodule Lambdapad.Cli.Erl do
     %{format: :eterm, from: to_string(file)}
   end
 
+  @doc """
+  Retrieve the widget blocks if they are defined in the Erlang input file.
+  """
   def get_widgets({__MODULE__, mod}, config) do
+    Code.ensure_loaded!(mod)
+
     if function_exported?(mod, :widgets, 1) do
       for widget <- mod.widgets(config), into: %{} do
         {key, value} = translate_page_data(widget)
@@ -103,7 +115,14 @@ defmodule Lambdapad.Cli.Erl do
     end
   end
 
+  @doc """
+  Retrieve the page blocks if they are defined. The `pages/1` function
+  must to be available inside of the Erlang input module or it produces
+  an error.
+  """
   def get_pages({__MODULE__, mod}, config) do
+    Code.ensure_loaded!(mod)
+
     if function_exported?(mod, :pages, 1) do
       for page <- mod.pages(config), do: translate_page_data(page)
     else
@@ -195,7 +214,13 @@ defmodule Lambdapad.Cli.Erl do
     """
   end
 
+  @doc """
+  Retrieves the assets blocks from the file. If the function isn't
+  defined, it's returning the default block `general`.
+  """
   def get_assets({__MODULE__, mod}, config) do
+    Code.ensure_loaded!(mod)
+
     if function_exported?(mod, :assets, 1) do
       for {name, {from, to}} <- mod.assets(config), into: %{} do
         {to_string(name), %{from: to_string(from), to: to_string(to)}}
@@ -205,7 +230,15 @@ defmodule Lambdapad.Cli.Erl do
     end
   end
 
+  @doc """
+  The transformation isn't applied for this format. It's returning
+  the items as are.
+  """
   def apply_transform({__MODULE__, _mod}, items), do: items
 
+  @doc """
+  There are no checks. Erlang input file isn't defining checks at
+  the moment.
+  """
   def get_checks({__MODULE__, _mod}), do: []
 end

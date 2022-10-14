@@ -6,6 +6,17 @@ defmodule Lambdapad.Config do
   """
   alias Lambdapad.Cli
 
+  @type filename() :: String.t()
+  @type workdir() :: String.t()
+
+  @doc """
+  Callback for ensuring we can read data for the implementation we are doing.
+  It's passing the filename, the working directory and it's returning an
+  ok-tuple with the map with the data inside or an error-tuple with the
+  reason as an atom.
+  """
+  @callback read_data(filename(), workdir()) :: {:ok, map()} | {:error, atom()}
+
   @doc """
   Get information about Lambdapad and when the command was launched.
   This information is useful to know the last time a page was rendered.
@@ -35,26 +46,30 @@ defmodule Lambdapad.Config do
     }
   end
 
+  @doc """
+  Retrieve the valid configurations based on the available modules.
+  """
   def valid_configs do
-    for "Elixir.Lambdapad.Config." <> mod <-
-          Enum.map(:code.all_loaded(), fn {mod, _} -> to_string(mod) end) do
-      mod
+    for {mod, _, _} <- :code.all_available(),
+        String.starts_with?(to_string(mod), "Elixir.Lambdapad.Config.") do
+      List.to_existing_atom(mod)
+      |> Module.split()
+      |> List.last()
       |> String.downcase()
       |> String.to_atom()
     end
   end
 
+  @doc """
+  Perform the initialization of the configuration based on the config blocks
+  and the working directory.
+  """
   def init(configs, workdir) when is_list(configs) do
     Enum.reduce(configs, {:ok, %{}}, fn config, {:ok, acc} ->
       {:ok, cfg} = init(config, workdir)
       {:ok, Map.merge(acc, cfg)}
     end)
   end
-
-  @type filename() :: String.t()
-  @type workdir() :: String.t()
-
-  @callback read_data(filename(), workdir()) :: {:ok, map()} | {:error, atom()}
 
   def init(%{format: format, from: file} = config, workdir) do
     module = Module.concat([__MODULE__, Macro.camelize(to_string(format))])
@@ -103,6 +118,11 @@ defmodule Lambdapad.Config do
 
   defp string_keys(other), do: other
 
+  @doc """
+  Transform data to the proplist format. It's intended that
+  a map, list of elements or whatever else, could be transformed
+  as a proper proplist which could be better handle by ErlyDTL.
+  """
   def to_proplist(%Date{day: day, month: month, year: year}) do
     [
       {"day", String.pad_leading(to_string(day), 2, "0")},
