@@ -6,7 +6,7 @@ defmodule Lambdapad.MixProject do
       name: "Lambdapad",
       description: "Static website generator",
       app: :lambdapad,
-      version: "0.8.0",
+      version: "0.9.0",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -17,7 +17,7 @@ defmodule Lambdapad.MixProject do
   end
 
   defp escript do
-    if Mix.env() != :prod and is_nil(System.get_env("IGNORE_BUILD_WARNING")) do
+    if Mix.env() == :dev and is_nil(System.get_env("IGNORE_BUILD_WARNING")) do
       IO.warn(
         """
         This script generated is including dependencies like ex_check,
@@ -52,6 +52,7 @@ defmodule Lambdapad.MixProject do
       {:optimus, "~> 0.3"},
       {:cowboy, "~> 2.8"},
       {:floki, "~> 0.30"},
+      {:phoenix_html, "~> 3.3"},
 
       # dependencies only for check, use `MIX_ENV=prod mix escript.build` for
       # generating the production script avoiding including these.

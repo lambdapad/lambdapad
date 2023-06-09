@@ -92,7 +92,7 @@ defmodule Lambdapad.BlogTest do
              "recent posts" => %{
                env: %{site_root: "/"},
                excerpt: true,
-               format: :erlydtl,
+               format: :eex,
                from: "posts/**/*.md",
                headers: true,
                index: true,
@@ -105,7 +105,7 @@ defmodule Lambdapad.BlogTest do
              "about" => %{
                env: %{site_root: "/"},
                excerpt: true,
-               format: :erlydtl,
+               format: :eex,
                from: "snippets/about.md",
                headers: true,
                index: false,
@@ -118,7 +118,7 @@ defmodule Lambdapad.BlogTest do
              "posts" => %{
                env: %{site_root: "/"},
                excerpt: true,
-               format: :erlydtl,
+               format: :eex,
                from: "posts/**/*.md",
                headers: true,
                index: true,
@@ -131,7 +131,7 @@ defmodule Lambdapad.BlogTest do
              "individual posts" => %{
                env: %{site_root: "/"},
                excerpt: true,
-               format: :erlydtl,
+               format: :eex,
                from: "posts/**/*.md",
                headers: true,
                index: false,
@@ -170,7 +170,7 @@ defmodule Lambdapad.BlogTest do
              "recent posts" => %{
                env: %{site_root: "/"},
                excerpt: true,
-               format: :erlydtl,
+               format: :eex,
                from: "posts/**/*.md",
                headers: true,
                index: true,
@@ -183,7 +183,7 @@ defmodule Lambdapad.BlogTest do
              "about" => %{
                env: %{site_root: "/"},
                excerpt: true,
-               format: :erlydtl,
+               format: :eex,
                from: "snippets/about.md",
                headers: true,
                index: false,
@@ -196,7 +196,7 @@ defmodule Lambdapad.BlogTest do
              "posts" => %{
                env: %{site_root: "/"},
                excerpt: true,
-               format: :erlydtl,
+               format: :eex,
                from: "posts/**/*.md",
                headers: true,
                index: true,
@@ -209,7 +209,7 @@ defmodule Lambdapad.BlogTest do
              "individual posts" => %{
                env: %{site_root: "/"},
                excerpt: true,
-               format: :erlydtl,
+               format: :eex,
                from: "posts/**/*.md",
                headers: true,
                index: false,

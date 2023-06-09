@@ -1,6 +1,6 @@
 defmodule Lambdapad.Generate do
   @moduledoc """
-  General generation of the pages. This module contains generic functions a
+  General generation of the pages. This module contains generic functions and
   common functionality to process the pages, widgets, assets, and
   configuration for the generation of the whole website.
   """

@@ -21,6 +21,7 @@ blog do
     set(var_name: "posts")
     set(index: true)
     set(template: "recent-posts.html")
+    set(format: :eex)
 
     set(
       env: %{
@@ -34,6 +35,7 @@ blog do
     set(var_name: "about")
     set(template: "index.html")
     set(uri: "/about")
+    set(format: :eex)
 
     set(
       env: %{
@@ -48,6 +50,7 @@ blog do
     set(index: true)
     set(var_name: "posts")
     set(uri: "/posts")
+    set(format: :eex)
 
     set(
       env: %{
@@ -61,6 +64,7 @@ blog do
     set(template: "post.html")
     set(var_name: "post")
     set(uri: "/posts/{{ post.id }}")
+    set(format: :eex)
 
     set(
       env: %{

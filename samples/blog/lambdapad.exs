@@ -42,7 +42,8 @@ blog do
   widget "recent posts" do
     set from: :posts
     set index: true
-    set template: "recent-posts.html"
+    set template: "recent-posts.html.eex"
+    set format: :eex
     set var_name: "posts"
   end
 
@@ -55,7 +56,8 @@ blog do
   end
 
   pages "sitemap" do
-    set template: "sitemap.xml"
+    set template: "sitemap.xml.eex"
+    set format: :eex
     set uri: "/sitemap.xml"
     set uri_type: :file
     set priority: :low
@@ -63,7 +65,8 @@ blog do
 
   pages "index" do
     set from: "snippets/about.md"
-    set template: "index.html"
+    set template: "index.html.eex"
+    set format: :eex
     set uri: "/"
     set var_name: "about"
     set transform_to_persist: fn(data, page) ->
@@ -79,7 +82,8 @@ blog do
 
   pages "posts index" do
     set from: :posts
-    set template: "posts.html"
+    set template: "posts.html.eex"
+    set format: :eex
     set uri: "/posts"
     set index: true
     set var_name: "posts"
@@ -101,7 +105,8 @@ blog do
 
   pages "posts" do
     set from: :posts
-    set template: "post.html"
+    set template: "post.html.eex"
+    set format: :eex
     set uri: "/posts/{{post.id}}"
     set var_name: "post"
     set transform_to_persist: fn(data, page) ->
@@ -116,7 +121,8 @@ blog do
   end
 
   pages "examples" do
-    set template: "example.html"
+    set template: "example.html.eex"
+    set format: :eex
     set uri: "/examples"
     set env: %{
       "example_file_content" => File.read!(Path.join([__DIR__, "lambdapad.exs"])),

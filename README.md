@@ -125,8 +125,8 @@ As you can see, at the moment, you can choose between Elixir or Erlang. You can 
 
 - **Templates**: we can write the templates using one of these options:
   - `erlydtl` (default): it's using [ErlyDTL or Django Templates][DT].
-  - `eex`: using [EEx][EEx] library instead ([WIP](https://github.com/altenwald/lambdapad/discussions/3))
-  - `wordpress_theme`: yes! we could use Wordpres Themes to build the site ([WIP](https://github.com/altenwald/lambdapad/discussions/4))
+  - `eex`: using [EEx][EEx] library instead.
+  - `wordpress_theme`: yes! we could use Wordpress Themes to build the site ([WIP](https://github.com/altenwald/lambdapad/discussions/4))
 
 - **Configuration**: we can write extracts of data to be in use for our templates, transforms, etc. in these formats:
   - `toml` (default): it's using [TOML][TOML]. Very powerful and simple.
@@ -141,7 +141,7 @@ As you can see, at the moment, you can choose between Elixir or Erlang. You can 
 
 ## Configuration Blocks (Elixir)
 
-We defined different blocks to be analysed and in use by lambdapad to generate the website. We are going to see them in detail right now.
+We defined different blocks to be analyzed and in use by lambdapad to generate the website. We are going to see them in detail right now.
 
 ### `config`
 
@@ -288,7 +288,7 @@ The sets we can use for widgets are the following:
 - `headers` (boolean) is telling if the markdown files have headers or not. Default value is `true`.
 - `excerpt` (boolean) is telling if the markdown files have excerpt or not. Even if they have no excerpt and we configure this value to `true` the code is getting the first paragraph as excerpt. Default value is `true`.
 - `var_name` (string | :plain) it's setting the list of pages using the name provided here to be in use into the template. The default value is `:plain`.
-- `format` (:erlydtl) yes, it makes no sense to put this value at the moment, but in near future it's desirable to have also support for other template engines like `:eex`. [Keep in touch!][EEx].
+- `format` (:erlydtl) configure the format we will use for our templates, we could choose between `erlydtl` and `eex`.
 - `env` (map) it's letting us to define extra parameters for the template in a map format (see pages example for further information).
 
 **Note** that if the `from` is retrieving different files, it will generate a list of elements which cannot be merge with the list of values, therefore `:plain` will be changed automatically to `"pages"` giving a warning.
@@ -355,7 +355,7 @@ The sets we can use with `pages` are the following:
 - `headers` (boolean) is telling if the markdown files have headers or not. Default value is `true`.
 - `excerpt` (boolean) is telling if the markdown files have excerpt or not. Even if they have no excerpt and we configure this value to `true` the code is getting the first paragraph as excerpt. Default value is `true`.
 - `var_name` (string | `:plain`) it's setting the list of pages using the name provided here to be in use into the template. The default value is `:plain`.
-- `format` (`:erlydtl`) yes, it makes no sense to put this value at the moment, but in near future it's desirable to have also support for other template engines like `:eex`. [Keep in touch!][EEx].
+- `format` (:erlydtl) configure the format we will use for our templates, we could choose between `erlydtl` and `eex`.
 - `env` (map) it's letting us to define extra parameters for the template in a map format:
 
   ```elixir
@@ -619,15 +619,21 @@ Lambdapad is choosing the first paragraph as the excerpt automatically.
 
 ### Templates
 
-At this moment we support only [ErlyDTL][ED] for templates. This is based on [Django Templates][DT] and in use for different systems in the Python ecosystem.
+We have support for two different ways for creating templates: [ErlyDTL][ED] based on [Django Templates][DT] and [EEx][EEx] based on the Elixir library with the same name.
 
-Depending on the configuration you use, you could have different information available into the template. The configuration from `config.toml` is inserted as is into the template so, for example, the information into the section `blog` for `url` could be accesible using:
+Depending on the configuration you use, you could have different information available into the template. The configuration from `config.toml` is inserted as is into the template so, for example, the information into the section `blog` for `url` could be accessible using the following code for `erlydtl`:
 
 ```htmldjango
 {{ blog.url }}
 ```
 
-And if we configure `var_name` for posts as `"posts"`, we can find a list of posts retrieved from the amount of files we have into the `posts/**.md` searching wildcard as:
+Or the following code using `eex`:
+
+```elixir
+<%= @blog[:url] %>
+```
+
+And if we configure `var_name` for posts as `"posts"`, we can find a list of posts retrieved from the amount of files we have into the `posts/**.md` searching wildcard for `erlydtl`:
 
 ```htmldjango
 {% for post in posts %}
@@ -638,20 +644,37 @@ And if we configure `var_name` for posts as `"posts"`, we can find a list of pos
 {% endfor %}
 ```
 
-Lambdapad also insert information inside of the template if you want to use it like this:
+Or using `eex`:
+
+```elixir
+<%= for post <- @posts do %>
+<div class='post'>
+  <h1><a name='#<%= post[:id] %>'><%= post[:title] %></a></h1>
+  <%= post[:excerpt] %>
+</div>
+<% end %>
+```
+
+Lambdapad also insert information inside of the template if you want to use it like this for `erlydtl`:
 
 ```htmldjango
 <generator uri="{{ lambdapad.url }}" version="{{ lambdapad.vsn }}">{{ lambdapad.name }}</generator>
 ```
 
+And this for `eex`:
+
+```elixir
+<generator uri="<%= @lambdapad[:url] %>" version="<%= @lambdapad[:vsn] %>"><%= @lambdapad[:name] %></generator>
+```
+
 - `name` is set as `Lambdapad`
 - `url` is set as https://lambdapad.com
-- `vsn` is set as the version number of the Lambdapad in use, at this moment: `0.7.0`
+- `vsn` is set as the version number of the Lambdapad in use, at this moment: `0.9.0`
 - `description` is set as `Static website generator`
 
 From every post we have also, and usually, available the following data:
 
-- `excerpt`: it's the text choosen as excerpt. If we configure the excerpt as false then it's going to be empty. It's clean text and all of the possible tags (i.e. strong, em or links) are removed.
+- `excerpt`: it's the text chosen as excerpt. If we configure the excerpt as false then it's going to be empty. It's clean text and all of the possible tags (i.e. strong, em or links) are removed.
 - `excerpt_html`: it's the HTML version of the excerpt.
 - `content`: the HTML content for the page.
 - `id`: it could be given from headers or set by Lambdapad if we disabled headers.

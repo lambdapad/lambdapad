@@ -1,0 +1,17 @@
+<%= render "header.html", assigns %>
+<div class="container">
+  <div class="row">
+    <div class="col-md-7">
+      <h1><%= @post[:title] %></h1>
+      <p class="post-info">
+        <%= @post[:date] %> by <%= @post[:author] %>
+      </p>
+      <%= raw @post[:content] %>
+    </div>
+    <div class="col-md-3">
+      <h3>Recent Posts</h3>
+      <%= widget "recent posts", assigns %>
+    </div>
+  </div>
+</div>
+<%= render "footer.html", assigns %>

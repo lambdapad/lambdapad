@@ -12,12 +12,12 @@
   xmlns:pagemap='http://www.google.com/schemas/sitemap-pagemap/1.0'
   xmlns:xhtml='http://www.w3.org/1999/xhtml'
 >
-{% for url, data in url_data %}
+<%= for {url, data} <- @url_data do %>
 <url>
-  <loc>{{ url }}</loc>
-  <lastmod>{{ data.last_update }}T00:00:00Z</lastmod>
-  <changefreq>{{ data.when_check|default:"daily" }}</changefreq>
-  <priority>{{ data.priority|default:"1.0" }}</priority>
+  <loc><%= url %></loc>
+  <lastmod><%= data[:last_update] %>T00:00:00Z</lastmod>
+  <changefreq><%= data[:when_check] || "daily" %></changefreq>
+  <priority><%= data[:priority] || "1.0" %></priority>
 </url>
-{% endfor %}
+<% end %>
 </urlset>
