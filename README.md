@@ -21,6 +21,12 @@ chmod +x lpad
 
 Then you will have the `lpad` script ready. You can copy it to a place accessible from wherever you are or even include it into the directory you have for generate your blog or website.
 
+It is also possible to _install_ the script with
+
+```
+mix escript.install
+```
+
 When you are running `lpad`, this command searches for a `lambdapad.exs` file into the current directory. You can indicate where the file is located, even if you called it in another way:
 
 ```
