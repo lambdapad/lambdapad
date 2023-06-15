@@ -5,3 +5,4 @@ description = """
   for my every site generating need.
   """
 url = "http://localhost:8080/"
+languages_path = "gettext"

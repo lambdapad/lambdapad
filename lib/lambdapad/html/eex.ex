@@ -16,6 +16,7 @@ defmodule Lambdapad.Html.Eex do
       html_quoted = EEx.compile_file(html_file, file: html_file, engine: Phoenix.HTML.Engine)
       quoted = quote file: html_file do
         defmodule unquote(module) do
+          import Lambdapad.Blog.Gettext
           @external_resource unquote(html_file)
           @working_dir Path.dirname(unquote(html_file))
           @current_file Path.basename(unquote(html_file), ".eex")

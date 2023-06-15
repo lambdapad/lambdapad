@@ -6,7 +6,7 @@
       <%= raw @about[:content] %>
     </div>
     <div class="col-md-3">
-      <h3 style="margin-top:0">Recent Posts</h3>
+      <h3 style="margin-top:0"><%= gettext("Recent Posts") %></h3>
       <%= widget "recent posts", assigns %>
     </div>
   </div>

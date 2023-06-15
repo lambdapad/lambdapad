@@ -53,6 +53,7 @@ defmodule Lambdapad.MixProject do
       {:cowboy, "~> 2.8"},
       {:floki, "~> 0.30"},
       {:phoenix_html, "~> 3.3"},
+      {:gettext, "~> 0.22"},
 
       # dependencies only for check, use `MIX_ENV=prod mix escript.build` for
       # generating the production script avoiding including these.

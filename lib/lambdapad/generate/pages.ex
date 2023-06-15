@@ -6,10 +6,26 @@ defmodule Lambdapad.Generate.Pages do
   alias Lambdapad.{Cli, Config, Generate, Html}
   alias Lambdapad.Generate.Sources
 
+  @default_language "en"
+  @default_languages_path "gettext"
+
   @doc false
   def process(pages, cfg, mod, workdir, output_dir) do
+    languages = Map.get(cfg, "languages", [@default_language])
+    {:ok, gettext_mod} =
+      cfg
+      |> Map.get("languages_path", @default_languages_path)
+      |> Lambdapad.Gettext.compile()
+
+    Enum.reduce(languages, cfg, fn language, config ->
+      Gettext.put_locale(gettext_mod, language)
+      process_pages(pages, language, config, mod, workdir, output_dir)
+    end)
+  end
+
+  defp process_pages(pages, language, cfg, mod, workdir, output_dir) do
     Enum.reduce(pages, cfg, fn {name, page_data}, config ->
-      Cli.print_level2("Pages", name)
+      Cli.print_level2("Pages (#{language})", name)
       page_data = Map.put(page_data, "name", name)
       format = page_data[:format]
       template_name = page_data[:template]
