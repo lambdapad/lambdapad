@@ -21,11 +21,7 @@ blog do
     set(template: "recent-posts.html")
     set(format: :eex)
 
-    set(
-      env: %{
-        site_root: "/"
-      }
-    )
+    set_env(site_root: "/")
   end
 
   pages "about" do
@@ -35,11 +31,7 @@ blog do
     set(uri: "/about")
     set(format: :eex)
 
-    set(
-      env: %{
-        site_root: "/"
-      }
-    )
+    set_env(site_root: "/")
   end
 
   pages "posts" do
@@ -50,11 +42,7 @@ blog do
     set(uri: "/posts")
     set(format: :eex)
 
-    set(
-      env: %{
-        site_root: "/"
-      }
-    )
+    set_env(site_root: "/")
   end
 
   pages "individual posts" do
@@ -64,10 +52,6 @@ blog do
     set(uri: "/posts/{{ post.id }}")
     set(format: :eex)
 
-    set(
-      env: %{
-        site_root: "/"
-      }
-    )
+    set_env(site_root: "/")
   end
 end

@@ -15,6 +15,10 @@ defmodule Lambdapad.Generate do
   """
   def resolve_uri(config, name, funct_or_uri, vars, index \\ nil)
 
+  def resolve_uri(_config, name, nil, _vars, _index) do
+    raise "Entry named #{name} needs a valid :uri key"
+  end
+
   def resolve_uri(_config, _name, funct, vars, index) when is_function(funct) do
     funct.(index, vars)
   end
@@ -42,6 +46,11 @@ defmodule Lambdapad.Generate do
 
       var_name when is_binary(var_name) ->
         [{var_name, Config.to_proplist(data)}]
+
+      _ ->
+        raise """
+        var_name must be specified for page data, available keys: #{inspect(Map.keys(page_data))}
+        """
     end
   end
 
@@ -72,6 +81,10 @@ defmodule Lambdapad.Generate do
     dir_path = Path.dirname(abs_path)
     :ok = File.mkdir_p!(dir_path)
     abs_path
+  end
+
+  def build_file_abspath(_output_dir, url, nil) do
+    raise "The :uri_type parameter must set a valid valid: :dir or :file for #{url}"
   end
 
   @doc """

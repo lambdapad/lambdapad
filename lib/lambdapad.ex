@@ -246,8 +246,18 @@ defmodule Lambdapad do
       config = var!(conf, Lambdapad.Blog)
 
       true = @content in ~w[ config assets checks transforms widgets pages ]a
-      new_conf = Map.put(config, unquote(key), unquote(value))
-      var!(conf, Lambdapad.Blog) = new_conf
+      var!(conf, Lambdapad.Blog) = Map.put(config, unquote(key), unquote(value))
+    end
+  end
+
+  defmacro set_env([{key, value}]) do
+    quote do
+      config = var!(conf, Lambdapad.Blog)
+      key = unquote(key)
+
+      true = @content in ~w[ config assets checks transforms widgets pages ]a
+      env = Map.put(config[:env] || %{}, key, unquote(value))
+      var!(conf, Lambdapad.Blog) = Map.put(config, :env, env)
     end
   end
 

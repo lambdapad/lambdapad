@@ -48,7 +48,7 @@ defmodule Lambdapad.Generate.Sources do
     data =
       Path.join(workdir, source)
       |> Path.wildcard()
-      |> Enum.map(&get_file(&1, page_data[:headers], page_data[:excerpt]))
+      |> Enum.map(&get_file(&1, !!page_data[:headers], !!page_data[:excerpt]))
 
     Pockets.put(@table, source, data)
     data
