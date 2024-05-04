@@ -1,6 +1,6 @@
-id     : first-impressions
-title  : My First Impressions Of LambdaPad
-date   : 2014-08-09
+id : first-impressions
+title : My First Impressions Of LambdaPad
+date : 2014-08-09
 author : Stan The Martian
 excerpt: How the Erlang based site generator strikes my fancy.
 
@@ -21,8 +21,8 @@ The good:
 The less-than-good:
 
 - Documentation is pretty much non-existent
-- Bug with re-generating content depending on template ``extends`` and
-  ``includes`` directives
+- Bug with re-generating content depending on template `extends` and
+  `includes` directives
 - Would be nice to have a "watch" feature where the site is automatically
   updated as underlying sources are changed
 - Not sure how I can include content from within a markdown source (Sphinx has
@@ -36,7 +36,7 @@ by what it does and have I have a hard time tracking down answers. It uses a
 lot of cleverness, which may be powerful in one respect, but it's also hard to
 follow.
 
-LambdaPad has [*one* configuration file](../examples/index.erl.html), which
+LambdaPad has [_one_ configuration file](/en/examples/index.erl.html), which
 defines the site structure and the data that feeds the generators.
 
 ## Django Templates
@@ -44,9 +44,9 @@ defines the site structure and the data that feeds the generators.
 The
 [Django template language](https://docs.djangoproject.com/en/dev/ref/templates/)
 is remarkably useful for defining site content. Just take a look at the
-templates used for this blog! With the ``extends`` tag you can defined
+templates used for this blog! With the `extends` tag you can defined
 base-level templates that provide overall site look-and-feel and structure and
-then customize each page as needed within that structure. With the ``include``
+then customize each page as needed within that structure. With the `include`
 tag you can include template snippets. This is great for frequently used
 content that doesn't appear in a base template --- e.g. the "Recent Posts"
 section listed on this page an include.
@@ -73,7 +73,7 @@ be fixed.
 
 ## Erlang Syntax
 
-Check out [the site definition for this blog](../examples/index.erl.html) and
+Check out [the site definition for this blog](/en/examples/index.erl.html) and
 judge for yourself!
 
 ## Things To Look Forward To
@@ -88,7 +88,7 @@ I can imagine a feature where LambdaPad runs in a continual "watch" mode and
 just re-generates content immediately when something changes. This would be
 uber productive and stupendous and great.
 
-From the look of my own ``index.erl`` for this blog, I wonder if some of the
+From the look of my own `index.erl` for this blog, I wonder if some of the
 syntax could possibly be improved. I know that functions can be used to express
 things clearly --- and I've tried to do that --- but I wonder how this will
 look to me over time. And when I'm drinking.

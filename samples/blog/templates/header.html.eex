@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title><%= @blog[:title] %></title>
+    <title><%= @blog[:title][@language] %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="<%= @blog[:description] %>">
+    <meta name="description" content="<%= @blog[:description][@language] %>">
     <meta name="author" content="<%= @blog[:author] %>">
     <link href="<%= @site_root %>css/bootstrap.min.css" rel="stylesheet">
     <link href="<%= @site_root %>css/bootstrap-responsive.min.css" rel="stylesheet">
@@ -20,8 +20,13 @@
               <div class="navbar-inner">
                 <div class="container">
                   <ul class="nav">
-                    <li class="active"><a href="<%= @site_root %>index.html">Home</a></li>
-                    <li><a href="<%= @site_root %>posts/index.html">Posts</a></li>
+                    <li class="active"><a href="<%= @site_root %><%= @language %>/index.html"><%= gettext("Home") %></a></li>
+                    <li><a href="<%= @site_root %><%= @language %>/posts/index.html"><%= gettext("Posts") %></a></li>
+                    <%= if @language == :en do %>
+                      <li><a href="<%= @site_root %>es">Español</a></li>
+                    <% else %>
+                      <li><a href="<%= @site_root %>en">English</a></li>
+                    <% end %>
                   </ul>
                 </div>
               </div>

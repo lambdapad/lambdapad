@@ -26,11 +26,14 @@ defmodule Lambdapad.Html.Erlydtl.Widget do
   the expected place.
   """
   def widget([name], config) do
-    {"widgets", widgets} = List.keyfind(config, "widgets", 0)
+    {"widgets", widgets_lang} = List.keyfind(config, "widgets", 0)
+    {"language", language} = List.keyfind(config, "language", 0)
 
-    case List.keyfind(widgets, name, 0) do
-      {^name, content} -> content
-      nil -> raise "widget #{inspect(name)} not found!"
+    with {^language, widgets} <- List.keyfind(widgets_lang, language, 0),
+         {^name, content} <- List.keyfind(widgets, name, 0) do
+      content
+    else
+      nil -> raise "widget #{inspect(name)} (locale #{language}) not found!"
     end
   end
 end

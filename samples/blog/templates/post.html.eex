@@ -8,10 +8,7 @@
       </p>
       <%= raw @post[:content] %>
     </div>
-    <div class="col-md-3">
-      <h3>Recent Posts</h3>
-      <%= widget "recent posts", assigns %>
-    </div>
+    <%= widget "recent posts", assigns %>
   </div>
 </div>
 <%= render "footer.html", assigns %>

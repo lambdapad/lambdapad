@@ -1,8 +1,14 @@
 [blog]
-title = "My Life With LambdaPad"
-description = """
+title.en = "My Life With LambdaPad"
+title.es = "Mi Vida Con LambdaPad"
+description.en = """
   Tales of daily life using the amazing LambdaPad
   for my every site generating need.
   """
+description.es = """
+  Historias de la vida diaria usando el increíble LambdaPad
+  para todas mis necesidades de generación de sitios.
+  """
 url = "http://localhost:8080/"
 languages_path = "gettext"
+languages = ["es", "en"]

@@ -6,7 +6,7 @@ defmodule Lambdapad.MixProject do
       name: "Lambdapad",
       description: "Static website generator",
       app: :lambdapad,
-      version: "0.9.0",
+      version: "0.10.0",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -39,28 +39,30 @@ defmodule Lambdapad.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :eex, :inets, :ssl]
+      extra_applications: [:logger, :eex, :inets, :ssl, :mix]
     ]
   end
 
   defp deps do
     [
       {:earmark, "~> 1.4"},
+      {:earmark_parser, "~> 1.4"},
       {:erlydtl, github: "manuel-rubio/erlydtl"},
       {:pockets, "~> 1.0"},
       {:toml, "~> 0.6"},
       {:optimus, "~> 0.3"},
       {:cowboy, "~> 2.8"},
       {:floki, "~> 0.30"},
-      {:phoenix_html, "~> 3.3"},
+      {:phoenix_html, "~> 4.1"},
       {:gettext, "~> 0.22"},
 
       # dependencies only for check, use `MIX_ENV=prod mix escript.build` for
       # generating the production script avoiding including these.
-      {:ex_check, "~> 0.14", runtime: false, only: :dev},
-      {:dialyxir, "~> 1.2", runtime: false, only: :dev},
-      {:doctor, "~> 0.19", runtime: false, only: :dev},
-      {:credo, "~> 1.6", runtime: false, only: :dev}
+      {:ex_doc, "~> 0.24", runtime: false, only: [:dev, :test]},
+      {:ex_check, "~> 0.14", runtime: false, only: [:dev, :test]},
+      {:dialyxir, "~> 1.2", runtime: false, only: [:dev, :test]},
+      {:doctor, "~> 0.19", runtime: false, only: [:dev, :test]},
+      {:credo, "~> 1.6", runtime: false, only: [:dev, :test]}
     ]
   end
 end

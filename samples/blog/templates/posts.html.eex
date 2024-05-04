@@ -3,7 +3,7 @@
 
 <%= if @posts != [] do %>
 <%= for post <- @posts do %>
-<h2><a href="<%= @site_root %>posts/<%= post[:id] %>"><%= post[:title] %></a></h2>
+<h2><a href="<%= @site_root %><%= @language %>/posts/<%= post[:id] %>"><%= post[:title] %></a></h2>
 <p><%= post[:date] %> by <%= post[:author] %></p>
 <p><%= post[:excerpt] %></p>
 <% end %>

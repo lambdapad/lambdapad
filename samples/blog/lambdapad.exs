@@ -61,13 +61,14 @@ blog do
     set uri: "/sitemap.xml"
     set uri_type: :file
     set priority: :low
+    set language: "es"
   end
 
   pages "index" do
     set from: "snippets/about.md"
     set template: "index.html.eex"
     set format: :eex
-    set uri: "/"
+    set uri: "/{{language}}"
     set var_name: "about"
     set transform_to_persist: fn(data, page) ->
       page =
@@ -84,7 +85,7 @@ blog do
     set from: :posts
     set template: "posts.html.eex"
     set format: :eex
-    set uri: "/posts"
+    set uri: "/{{language}}/posts"
     set index: true
     set var_name: "posts"
     set transform_to_persist: fn(data, page) ->
@@ -107,7 +108,7 @@ blog do
     set from: :posts
     set template: "post.html.eex"
     set format: :eex
-    set uri: "/posts/{{post.id}}"
+    set uri: "/{{language}}/posts/{{post.id}}"
     set var_name: "post"
     set transform_to_persist: fn(data, page) ->
       post =
@@ -123,7 +124,7 @@ blog do
   pages "examples" do
     set template: "example.html.eex"
     set format: :eex
-    set uri: "/examples"
+    set uri: "/{{language}}/examples"
     set env: %{
       "example_file_content" => File.read!(Path.join([__DIR__, "lambdapad.exs"])),
       "example_file" => "lambdapad.exs"

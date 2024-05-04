@@ -130,7 +130,7 @@ defmodule Lambdapad.Blog.Erl do
     end
   end
 
-  defp pages_default() do
+  defp pages_default do
     %{
       uri_type: :dir,
       index: false,

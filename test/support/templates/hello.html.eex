@@ -1,0 +1,4 @@
+<title><%= gettext("Hello world") %></title>
+<%= raw inspect(@blog) %>
+----------
+<%= raw @page[:content] %>

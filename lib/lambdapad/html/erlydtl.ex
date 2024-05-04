@@ -20,35 +20,35 @@ defmodule Lambdapad.Html.Erlydtl do
     if Code.ensure_loaded?(module) do
       module
     else
-      templates_dir = Path.join([workdir, "templates"])
-      html_file_path = to_charlist(Path.join([templates_dir, html_file]))
+      load_module(module, name, html_file, workdir)
+    end
+  end
 
-      opts = [
-        :return,
-        libraries: [
-          {"widget", Lambdapad.Html.Erlydtl.Widget},
-          {"filters", Lambdapad.Html.Erlydtl.Filters}
-        ],
-        default_libraries: ~w[ widget filters ]
-      ]
+  defp load_module(module, name, html_file, workdir) do
+    templates_dir = Path.join([workdir, "templates"])
+    html_file_path = to_charlist(Path.join([templates_dir, html_file]))
 
-      case :erlydtl.compile_file(html_file_path, module, opts) do
-        {:ok, _module, warnings} ->
-          warnings = filter_warnings(warnings)
+    opts = [
+      :return,
+      libraries: [
+        {"widget", Lambdapad.Html.Erlydtl.Widget},
+        {"filters", Lambdapad.Html.Erlydtl.Filters}
+      ],
+      default_libraries: ~w[ widget filters ]
+    ]
 
-          if warnings != [] do
-            Cli.print_level2_warn("#{inspect(warnings)}")
-          end
+    case :erlydtl.compile_file(html_file_path, module, opts) do
+      {:ok, _module, warnings} ->
+        warnings = filter_warnings(warnings)
+        if warnings != [], do: Cli.print_level2_warn("#{inspect(warnings)}")
+        module
 
-          module
+      {:error, error, []} ->
+        raise """
+        template #{inspect(name)} file #{inspect(html_file)} not found
 
-        {:error, error, []} ->
-          raise """
-          template #{inspect(name)} file #{inspect(html_file)} not found
-
-          error: #{inspect(error)}
-          """
-      end
+        error: #{inspect(error)}
+        """
     end
   end
 
@@ -62,7 +62,7 @@ defmodule Lambdapad.Html.Erlydtl do
     filter_warnings(rest, acc)
   end
 
-  defp filter_warnings([{'', [{_n, :sys_core_fold, :useless_building}]} | rest], acc) do
+  defp filter_warnings([{~c"", [{_n, :sys_core_fold, :useless_building}]} | rest], acc) do
     filter_warnings(rest, acc)
   end
 

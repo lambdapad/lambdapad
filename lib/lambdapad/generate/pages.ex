@@ -10,41 +10,59 @@ defmodule Lambdapad.Generate.Pages do
   @default_languages_path "gettext"
 
   @doc false
-  def process(pages, cfg, mod, workdir, output_dir) do
-    languages = Map.get(cfg, "languages", [@default_language])
-    {:ok, gettext_mod} =
-      cfg
-      |> Map.get("languages_path", @default_languages_path)
-      |> Lambdapad.Gettext.compile()
-
-    Enum.reduce(languages, cfg, fn language, config ->
-      Gettext.put_locale(gettext_mod, language)
-      process_pages(pages, language, config, mod, workdir, output_dir)
+  def compile_resources(pages, workdir) do
+    Enum.each(pages, fn {name, page_data} ->
+      format = page_data[:format]
+      template_name = page_data[:template]
+      Html.init(:page, name, template_name, workdir, format)
     end)
   end
 
-  defp process_pages(pages, language, cfg, mod, workdir, output_dir) do
-    Enum.reduce(pages, cfg, fn {name, page_data}, config ->
-      Cli.print_level2("Pages (#{language})", name)
-      page_data = Map.put(page_data, "name", name)
-      format = page_data[:format]
-      template_name = page_data[:template]
-      render_mod = Html.init(:page, name, template_name, workdir, format)
+  @doc false
+  def process(pages, cfg, mod, workdir, output_dir) do
+    languages = cfg["blog"]["languages"] || [@default_language]
+    languages_path = cfg["blog"]["languages_path"] || @default_languages_path
 
-      pages =
-        page_data
-        |> Sources.get_files(workdir)
-        |> process_transforms_on_item(mod, config, page_data)
-        |> process_transforms_on_page(mod, config, page_data)
+    {:ok, gettext_mod} = Lambdapad.Gettext.compile(languages_path)
 
-      chg_config = process_transforms_on_config(config, mod, pages, page_data)
-      chg_config = generate_pages(pages, chg_config, name, page_data, output_dir, render_mod, mod)
-      Cli.print_level2_ok()
+    Enum.reduce(languages, cfg, fn language, config ->
+      Gettext.put_locale(gettext_mod, language)
 
-      config
-      |> Map.put(:url_data, chg_config[:url_data])
-      |> Map.put(:links, chg_config[:links])
+      Enum.reduce(pages, config, fn {name, page_data}, config ->
+        process_pages(name, page_data, language, config, mod, workdir, output_dir)
+      end)
     end)
+  end
+
+  defp process_pages(_name, page_data, language, config, _mod, _workdir, _output_dir)
+       when is_map_key(page_data, :language) and page_data.language != language,
+       do: config
+
+  defp process_pages(name, page_data, language, config, mod, workdir, output_dir) do
+    Cli.print_level2("Pages (#{language})", name)
+    format = page_data[:format]
+    template_name = page_data[:template]
+    render_mod = Html.init(:page, name, template_name, workdir, format)
+    atom_lang = String.to_atom(language)
+
+    page_data =
+      page_data
+      |> Map.put("name", name)
+      |> Map.update(:env, %{"language" => atom_lang}, &Map.put(&1, "language", atom_lang))
+
+    pages =
+      page_data
+      |> Sources.get_files(workdir)
+      |> process_transforms_on_item(mod, config, page_data)
+      |> process_transforms_on_page(mod, config, page_data)
+
+    chg_config = process_transforms_on_config(config, mod, pages, page_data)
+    chg_config = generate_pages(pages, chg_config, name, page_data, output_dir, render_mod, mod)
+    Cli.print_level2_ok()
+
+    config
+    |> Map.put(:url_data, chg_config[:url_data])
+    |> Map.put(:links, chg_config[:links])
   end
 
   defp process_transforms_on_item(nil, _mod, _config, _page_data), do: nil

@@ -65,7 +65,7 @@ defmodule Lambdapad do
       def assets(_), do: nil
 
       @doc false
-      def sources(), do: %{}
+      def sources, do: %{}
 
       @doc false
       def source(key) do
@@ -90,7 +90,7 @@ defmodule Lambdapad do
 
       defp translate_from(%{} = data), do: data
 
-      defp pages_default() do
+      defp pages_default do
         %{
           uri_type: :dir,
           index: false,
@@ -104,7 +104,7 @@ defmodule Lambdapad do
         }
       end
 
-      defp widgets_default() do
+      defp widgets_default do
         %{
           format: :erlydtl,
           headers: true,
@@ -113,7 +113,7 @@ defmodule Lambdapad do
         }
       end
 
-      defp config_default() do
+      defp config_default do
         %{
           format: :toml,
           from: "config.toml",

@@ -13,10 +13,35 @@ defmodule Lambdapad.Generate.Widgets do
   alias Lambdapad.{Cli, Config, Generate, Html}
   alias Lambdapad.Generate.Sources
 
+  @default_language "en"
+  @default_languages_path "gettext"
+
+  @doc false
+  def compile_resources(widgets, workdir) do
+    Enum.each(widgets, fn {name, widget_data} ->
+      format = widget_data[:format]
+      template_name = widget_data[:template]
+      Html.init(:widget, name, template_name, workdir, format)
+    end)
+  end
+
   @doc false
   def process(widgets, config, mod, workdir) do
+    languages = config["blog"]["languages"] || [@default_language]
+    languages_path = config["blog"]["languages_path"] || @default_languages_path
+
+    {:ok, gettext_mod} = Lambdapad.Gettext.compile(languages_path)
+
+    Enum.reduce(languages, %{}, fn language, acc ->
+      Gettext.put_locale(gettext_mod, language)
+      widgets_iodata = process_widgets(widgets, config, mod, workdir, language)
+      Map.put(acc, language, widgets_iodata)
+    end)
+  end
+
+  defp process_widgets(widgets, config, mod, workdir, language) do
     Enum.reduce(widgets, %{}, fn {name, widget_data}, acc ->
-      Cli.print_level2("Widget", name)
+      Cli.print_level2("Widget (#{language})", name)
       format = widget_data[:format]
       template_name = widget_data[:template]
       render_mod = Html.init(:widget, name, template_name, workdir, format)
@@ -38,6 +63,7 @@ defmodule Lambdapad.Generate.Widgets do
         |> get_vars(widget_data[:var_name])
 
       env_data = Config.to_proplist(widget_data[:env]) || []
+      env_data = [{:language, String.to_atom(language)} | env_data]
       iodata = Html.render(vars, render_mod, plist_config ++ env_data)
       Cli.print_level2_ok()
       Map.put(acc, name, iodata)

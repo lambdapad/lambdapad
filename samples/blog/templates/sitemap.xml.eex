@@ -12,7 +12,7 @@
   xmlns:pagemap='http://www.google.com/schemas/sitemap-pagemap/1.0'
   xmlns:xhtml='http://www.w3.org/1999/xhtml'
 >
-<%= for {url, data} <- @url_data do %>
+<%= for {url, data} <- Map.new(@url_data) do %>
 <url>
   <loc><%= url %></loc>
   <lastmod><%= data[:last_update] %>T00:00:00Z</lastmod>

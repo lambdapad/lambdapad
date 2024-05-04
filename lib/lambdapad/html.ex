@@ -39,7 +39,7 @@ defmodule Lambdapad.Html do
   """
   def render(vars, module, config) do
     vars = vars ++ config
-    {:ok, data} = apply(module, :render, [vars, config])
+    {:ok, data} = module.render(vars, config)
     IO.iodata_to_binary(data)
   end
 end

@@ -260,7 +260,7 @@ defmodule Lambdapad.Cli do
   Prints a level2 end of task if the loglevel is big enough to show it.
   """
   @spec print_level2_ok() :: :ok
-  def print_level2_ok() do
+  def print_level2_ok do
     case Application.get_env(:lambdapad, :loglevel, 1) do
       2 -> IO.puts([IO.ANSI.green(), " ok", IO.ANSI.reset()])
       n when n >= 3 -> IO.write("\n")

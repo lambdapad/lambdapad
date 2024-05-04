@@ -12,7 +12,7 @@ defmodule Lambdapad.BlogTest do
 
     assert %{
              "recent posts" => %{
-               env: %{site_root: '/'},
+               env: %{site_root: ~c"/"},
                excerpt: true,
                format: :erlydtl,
                from: "posts/**/*.md",
@@ -25,7 +25,7 @@ defmodule Lambdapad.BlogTest do
 
     assert %{
              "/about" => %{
-               env: %{site_root: '/'},
+               env: %{site_root: ~c"/"},
                excerpt: true,
                format: :erlydtl,
                from: "snippets/about.md",
@@ -38,7 +38,7 @@ defmodule Lambdapad.BlogTest do
                var_name: "about"
              },
              "/posts" => %{
-               env: %{site_root: '/'},
+               env: %{site_root: ~c"/"},
                excerpt: true,
                format: :erlydtl,
                from: "posts/**/*.md",
@@ -51,7 +51,7 @@ defmodule Lambdapad.BlogTest do
                var_name: "posts"
              },
              "/posts/{{ post.id }}" => %{
-               env: %{site_root: '/'},
+               env: %{site_root: ~c"/"},
                excerpt: true,
                format: :erlydtl,
                from: "posts/**/*.md",
