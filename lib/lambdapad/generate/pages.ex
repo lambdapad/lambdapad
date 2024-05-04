@@ -50,6 +50,8 @@ defmodule Lambdapad.Generate.Pages do
       |> Map.put("name", name)
       |> Map.update(:env, %{"language" => atom_lang}, &Map.put(&1, "language", atom_lang))
 
+    config = Map.put(config, "language", language)
+
     pages =
       page_data
       |> Sources.get_files(workdir)

@@ -1,0 +1,11 @@
+<div class="col-md-3">
+  <h3>Recent Posts</h3>
+  <table class="recent-posts">
+    {% for post in posts %}
+    <tr>
+      <td style="white-space: nowrap">{{ post.date }}</td>
+      <td><a href="{{site_root}}posts/{{post.id}}">{{ post.title }}</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>

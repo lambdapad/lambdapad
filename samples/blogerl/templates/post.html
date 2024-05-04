@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block body %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-7">
+      <h1>{{ post.title }}</h1>
+      <p class="post-info">{{ post.date }} by {{ post.author }}</p>
+      {{ post.content | safe }}
+    </div>
+    {% widget "recent posts" %}
+  </div>
+</div>
+
+{% endblock %}

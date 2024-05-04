@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+{% include "jumbotron.html" %}
+
+{% for post in posts %}
+<h2><a href="{{site_root}}posts/{{post.id}}">{{ post.title }}</a></h2>
+<p>{{post.date}} by {{post.author}}</p>
+<p>{{post.excerpt}}</p>
+
+{% empty %}
+<center><h2>Ouch! There aren't an posts here, whaaat?</h2></center>
+{% endfor %}
+
+{% endblock %}

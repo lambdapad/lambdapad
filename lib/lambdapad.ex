@@ -282,7 +282,7 @@ defmodule Lambdapad do
   defmacro extension(file) do
     file
     |> File.read!()
-    |> Code.string_to_quoted!()
+    |> Code.string_to_quoted!(file: file)
   end
 
   defmacro doc(_text), do: nil
