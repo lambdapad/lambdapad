@@ -15,7 +15,7 @@ If you love this content and want we can generate more, you can support us:
 You need only to get the code, from source code you can:
 
 ```
-wget http://localhost:8080/download/lpad
+wget https://lambdapad.com/download/lpad
 chmod +x lpad
 ```
 
