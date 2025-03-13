@@ -16,6 +16,8 @@ defmodule Lambdapad.Generate.Assets do
   to the target `site/css`.
   """
   alias Lambdapad.Cli
+  alias Lambdapad.Generate.Assets.Esbuild
+  alias Lambdapad.Generate.Assets.Tailwind
 
   @doc false
   def process(assets, workdir) do
@@ -32,14 +34,31 @@ defmodule Lambdapad.Generate.Assets do
       dst_path = Path.join([workdir, data[:to]])
 
       Enum.each(Path.wildcard(src_path), fn file ->
-        dst_file = String.replace_prefix(file, base_src_path, dst_path)
         base_file = String.replace_prefix(file, base_src_path, "")
-        Cli.print_level3(base_file)
-        File.mkdir_p(Path.dirname(dst_file))
-        File.cp(file, dst_file)
+        print_file = get_print_file(base_file, file)
+        process_file(data, file, dst_path, base_file)
+        Cli.print_level3(print_file)
       end)
 
       Cli.print_level2_ok()
     end)
+  end
+
+  defp get_print_file("", file), do: Path.basename(file)
+  defp get_print_file(base_file, _file), do: base_file
+
+  defp process_file(%{tool: :esbuild} = data, src_file, dst_path, base_file) do
+    Esbuild.run(data, src_file, dst_path, base_file)
+  end
+
+  defp process_file(%{tool: :tailwind} = data, src_file, dst_path, base_file) do
+    Tailwind.run(data, src_file, dst_path, base_file)
+  end
+
+  defp process_file(_data, src_file, dst_path, base_file) do
+    dst_file = Path.join(dst_path, base_file)
+    File.mkdir_p(Path.dirname(dst_file))
+    File.cp!(src_file, dst_file)
+    :ok
   end
 end

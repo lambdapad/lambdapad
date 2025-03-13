@@ -6,13 +6,19 @@ defmodule Lambdapad.MixProject do
       name: "Lambdapad",
       description: "Static website generator",
       app: :lambdapad,
-      version: "0.10.1",
-      elixir: "~> 1.11",
+      version: "0.11.0",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       escript: escript(),
-      name: "Lambdapad",
+      dialyzer: dialyzer(),
       homepage_url: "https://lambdapad.com"
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_add_apps: [:tailwind, :esbuild]
     ]
   end
 
@@ -39,7 +45,8 @@ defmodule Lambdapad.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :eex, :inets, :ssl, :mix]
+      extra_applications: [:logger, :eex, :inets, :ssl, :mix],
+      included_applications: [:esbuild, :tailwind]
     ]
   end
 
@@ -55,6 +62,10 @@ defmodule Lambdapad.MixProject do
       {:floki, "~> 0.30"},
       {:phoenix_html, "~> 4.1"},
       {:gettext, "~> 0.22"},
+
+      # included applications
+      {:esbuild, "~> 0.9", runtime: false},
+      {:tailwind, "~> 0.3", runtime: false},
 
       # dependencies only for check, use `MIX_ENV=prod mix escript.build` for
       # generating the production script avoiding including these.
