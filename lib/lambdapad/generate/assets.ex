@@ -56,9 +56,11 @@ defmodule Lambdapad.Generate.Assets do
   end
 
   defp process_file(_data, src_file, dst_path, base_file) do
-    dst_file = Path.join(dst_path, base_file)
-    File.mkdir_p(Path.dirname(dst_file))
-    File.cp!(src_file, dst_file)
+    unless File.dir?(src_file) do
+      dst_file = Path.join(dst_path, base_file)
+      File.mkdir_p(Path.dirname(dst_file))
+      File.cp!(src_file, dst_file)
+    end
     :ok
   end
 end

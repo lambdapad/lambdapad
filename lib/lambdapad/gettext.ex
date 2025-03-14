@@ -12,7 +12,7 @@ defmodule Lambdapad.Gettext do
       quote do
         defmodule Lambdapad.Blog.Gettext do
           @moduledoc false
-          use Gettext, otp_app: :lambdapad, priv: unquote(priv)
+          use Gettext.Backend, otp_app: :lambdapad, priv: unquote(priv)
         end
       end
 

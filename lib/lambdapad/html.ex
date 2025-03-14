@@ -28,6 +28,7 @@ defmodule Lambdapad.Html do
   on the 4th parameter for this behaviour.
   """
   def init(type, name, html_file, workdir, backend) when is_binary(name) do
+    Logger.put_module_level(Earmark.Parser.LineScanner, :error)
     backend = Module.concat([__MODULE__, Macro.camelize(to_string(backend))])
     backend.init(type, name, html_file, workdir)
   end

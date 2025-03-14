@@ -27,7 +27,7 @@ defmodule Lambdapad.Html.Eex do
     quoted =
       quote file: html_file do
         defmodule unquote(module) do
-          import Lambdapad.Blog.Gettext
+          use Gettext, backend: Lambdapad.Blog.Gettext
           alias Lambdapad.Html.Eex, as: HtmlEex
           alias Phoenix.HTML.Engine, as: HtmlEngine
           @external_resource unquote(html_file)
@@ -80,7 +80,7 @@ defmodule Lambdapad.Html.Eex do
 
     quoted =
       quote do
-        import Lambdapad.Blog.Gettext
+        use Gettext, backend: Lambdapad.Blog.Gettext
         unquote(quoted)
       end
 
