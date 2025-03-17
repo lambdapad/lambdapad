@@ -61,6 +61,7 @@ defmodule Lambdapad.Generate.Assets do
       File.mkdir_p(Path.dirname(dst_file))
       File.cp!(src_file, dst_file)
     end
+
     :ok
   end
 end
