@@ -36,6 +36,7 @@ defmodule Lambdapad.Generate.Assets.Esbuild do
   end
   ```
   """
+  alias Lambdapad.Cli
 
   defp install_if_needed(data) do
     version = data[:esbuild][:version] || Esbuild.configured_version()
@@ -71,8 +72,13 @@ defmodule Lambdapad.Generate.Assets.Esbuild do
     Esbuild.bin_path()
     |> System.cmd(args, opts)
     |> case do
-      {_, 0} -> :ok
-      {reason, code} -> {:error, {reason, code}}
+      {output, 0} ->
+        Cli.print_level3_multiline(output)
+        :ok
+
+      {output, code} ->
+        Cli.print_level3_multiline(output)
+        {:error, code}
     end
   end
 

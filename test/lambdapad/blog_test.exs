@@ -143,12 +143,13 @@ defmodule Lambdapad.BlogTest do
              }
            } == Map.new(Blog.Base.get_pages(mod, config))
 
-    assert %{
-             "files" => %{
-               from: "assets/*.css",
-               to: "site/css"
-             }
-           } == Blog.Base.get_assets(mod, config)
+    assert [
+             {"files",
+              %{
+                from: "assets/*.css",
+                to: "site/css"
+              }}
+           ] == Blog.Base.get_assets(mod, config)
   end
 
   test "blog_extended.exs" do
@@ -223,11 +224,12 @@ defmodule Lambdapad.BlogTest do
 
     assert %{"last_update" => %{on: :config, run: _}} = Lambdapad.Blog.transforms()
 
-    assert %{
-             "files" => %{
-               from: "assets/*.css",
-               to: "site/css"
-             }
-           } == Blog.Base.get_assets(mod, config)
+    assert [
+             {"files",
+              %{
+                from: "assets/*.css",
+                to: "site/css"
+              }}
+           ] == Blog.Base.get_assets(mod, config)
   end
 end

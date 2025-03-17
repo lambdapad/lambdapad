@@ -102,6 +102,14 @@ defmodule Lambdapad.Cli do
   end
 
   @doc """
+  Returns if the loglevel is higher than the number provided.
+  """
+  @spec loglevel_equal_or_greater_than?(pos_integer()) :: boolean()
+  def loglevel_equal_or_greater_than?(loglevel) when loglevel >= 1 do
+    Application.get_env(:lambdapad, :loglevel, 1) >= loglevel
+  end
+
+  @doc """
   Print a message in the loglevel 1. It's ensuring that it's possible to be
   printed based on the content of the loglevel information and depending on
   that information is printing the whole detailed information string
@@ -110,7 +118,7 @@ defmodule Lambdapad.Cli do
   """
   @spec print_level1(String.t()) :: pos_integer()
   def print_level1(name) do
-    if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
+    if loglevel_equal_or_greater_than?(2) do
       IO.puts([IO.ANSI.blue(), "*", IO.ANSI.reset(), " ", name, ":"])
     else
       IO.write([
@@ -132,7 +140,7 @@ defmodule Lambdapad.Cli do
   """
   @spec print_level1(String.t(), String.t()) :: pos_integer()
   def print_level1(name, annex) do
-    if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
+    if loglevel_equal_or_greater_than?(2) do
       IO.puts([
         IO.ANSI.blue(),
         "*",
@@ -169,7 +177,7 @@ defmodule Lambdapad.Cli do
   def print_level1_ok(t) do
     t = System.system_time(:millisecond) - t
 
-    if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
+    if loglevel_equal_or_greater_than?(2) do
       IO.puts([IO.ANSI.blue(), "  Done (#{t / 1000}s)", IO.ANSI.reset()])
     else
       IO.puts([IO.ANSI.blue(), "\n  Done (#{t / 1000}s)", IO.ANSI.reset()])
@@ -181,7 +189,7 @@ defmodule Lambdapad.Cli do
   also returning the current time or timestamp.
   """
   def print_level2(name) do
-    if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
+    if loglevel_equal_or_greater_than?(2) do
       IO.write([IO.ANSI.blue(), "  -", IO.ANSI.reset(), " ", name, " "])
     else
       IO.write([IO.ANSI.green(), ".", IO.ANSI.reset()])
@@ -195,7 +203,7 @@ defmodule Lambdapad.Cli do
   It's also returning the current time or timestamp.
   """
   def print_level2(name, annex) do
-    if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
+    if loglevel_equal_or_greater_than?(2) do
       IO.write([
         IO.ANSI.blue(),
         "  -",
@@ -242,7 +250,7 @@ defmodule Lambdapad.Cli do
   """
   @spec print_level2_warn(iodata()) :: :ok
   def print_level2_warn(msg) do
-    if Application.get_env(:lambdapad, :loglevel, 1) >= 2 do
+    if loglevel_equal_or_greater_than?(2) do
       IO.write([
         "\n    ",
         IO.ANSI.yellow(),
@@ -272,10 +280,25 @@ defmodule Lambdapad.Cli do
   Prints a level3 message if the loglevel is big enough to show it.
   """
   def print_level3(name) do
-    if Application.get_env(:lambdapad, :loglevel, 1) >= 3 do
+    if loglevel_equal_or_greater_than?(3) do
       IO.write(["\n    ", IO.ANSI.blue(), "- ", IO.ANSI.reset(), name])
     else
       IO.write([IO.ANSI.blue(), ".", IO.ANSI.reset()])
+    end
+  end
+
+  @doc """
+  When we need to output a text in multi-line way, but only if level3
+  is available to present data.
+  """
+  def print_level3_multiline(text) do
+    if loglevel_equal_or_greater_than?(3) do
+      text =
+        text
+        |> String.trim()
+        |> String.replace(~r/\n/, "\n    | ")
+
+      IO.write(["\n    | ", IO.ANSI.blue(), "- ", IO.ANSI.reset(), text])
     end
   end
 

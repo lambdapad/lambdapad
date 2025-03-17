@@ -32,6 +32,7 @@ defmodule Lambdapad.Generate.Assets.Tailwind do
   end
   ```
   """
+  alias Lambdapad.Cli
 
   defp install_if_needed(data) do
     version = data[:tailwind][:version] || Tailwind.configured_version()
@@ -68,8 +69,13 @@ defmodule Lambdapad.Generate.Assets.Tailwind do
     Tailwind.bin_path()
     |> System.cmd(args, opts)
     |> case do
-      {_, 0} -> :ok
-      {reason, code} -> {:error, {reason, code}}
+      {output, 0} ->
+        Cli.print_level3_multiline(output)
+        :ok
+
+      {output, code} ->
+        Cli.print_level3_multiline(output)
+        {:error, code}
     end
   end
 

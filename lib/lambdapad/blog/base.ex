@@ -36,27 +36,40 @@ defmodule Lambdapad.Blog.Base do
   defp priority(:high), do: 0
   defp priority(_), do: 50
 
+  defp get_priority(%{"priority" => priority}), do: priority
+  defp get_priority(%{priority: priority}), do: priority
+
+  defp get_priority(data) when is_list(data) do
+    case Enum.find(data, fn {key, _} -> key in ["priority", :priority] end) do
+      {_key, priority} -> priority
+      _ -> nil
+    end
+  end
+
+  defp get_priority(_), do: nil
+
+  defp maybe_order_by_priority(elements) do
+    if Enum.any?(elements, fn {_, data} -> get_priority(data) != nil end) do
+      Enum.sort_by(elements, fn {_key, data} -> priority(get_priority(data)) end)
+    else
+      elements
+    end
+  end
+
   @doc false
   def pages(pages) do
-    pages =
-      for name <- pages do
-        {name, Blog.pages(name)}
-      end
-
-    if Enum.any?(pages, fn {_, data} -> data["priority"] != nil end) do
-      Enum.sort_by(pages, fn {_key, data} -> priority(data["priority"]) end)
-    else
-      pages
-    end
+    pages
+    |> Enum.map(&{&1, Blog.pages(&1)})
+    |> maybe_order_by_priority()
   end
 
   @doc false
   def assets([]), do: %{"general" => Blog.assets("general")}
 
   def assets(assets) do
-    for name <- assets, into: %{} do
-      {name, Blog.assets(name)}
-    end
+    assets
+    |> Enum.map(&{&1, Blog.assets(&1)})
+    |> maybe_order_by_priority()
   end
 
   @doc """
