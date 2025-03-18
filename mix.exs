@@ -6,7 +6,7 @@ defmodule Lambdapad.MixProject do
       name: "Lambdapad",
       description: "Static website generator",
       app: :lambdapad,
-      version: "0.11.0",
+      version: "0.11.1",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
