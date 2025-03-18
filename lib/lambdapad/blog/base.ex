@@ -34,7 +34,16 @@ defmodule Lambdapad.Blog.Base do
 
   defp priority(:low), do: 100
   defp priority(:high), do: 0
-  defp priority(_), do: 50
+  defp priority(num) when num in 0..100, do: num
+  defp priority(nil), do: 50
+
+  defp priority(other) do
+    IO.warn(
+      "Priority don't recognized: #{inspect(other)}; it should be 0..100, :low, or :high; using 50"
+    )
+
+    50
+  end
 
   defp get_priority(%{"priority" => priority}), do: priority
   defp get_priority(%{priority: priority}), do: priority
