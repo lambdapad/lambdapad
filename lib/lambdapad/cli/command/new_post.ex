@@ -146,7 +146,7 @@ defmodule Lambdapad.Cli.Command.NewPost do
 
     path_fmt =
       config["blog"]["posts_path"] ||
-        params[:"posts-path"] ||
+        params[:"posts-dir"] ||
         @default_posts_path
 
     {rel_path, _} = Code.eval_string(~s|"#{path_fmt}"|, bindings)
