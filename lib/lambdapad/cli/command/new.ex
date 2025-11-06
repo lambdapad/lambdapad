@@ -11,13 +11,16 @@ defmodule Lambdapad.Cli.Command.New do
   use Lambdapad.Cli.Command
   alias Lambdapad.Cli
 
-  @external_resource "templates/*"
   Module.register_attribute(__MODULE__, :templates, accumulate: true)
 
   for "templates/" <> template <- Path.wildcard("templates/*") do
     files =
       Path.wildcard("templates/#{template}/**")
       |> Enum.filter(&File.regular?/1)
+
+    for filepath <- files do
+      @external_resource filepath
+    end
 
     @templates {template,
                 for filepath <- files do

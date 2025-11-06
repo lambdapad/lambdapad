@@ -22,11 +22,21 @@ defmodule Lambdapad.Cli.Command.NewPost do
 
   @default_posts_path ~S"posts/#{yyyy}/#{mm}/#{dd}/#{slug}.md"
 
+  @user_interrupt_code 137
+
   @impl Lambdapad.Cli.Command
   def options do
     [
       name: "new-post",
       about: "Create a new post inside of the posts directory based on the format",
+      flags: [
+        interactive: [
+          short: "-i",
+          long: "--interactive",
+          help: "Request confirmation of data one by one",
+          multiple: false
+        ]
+      ],
       options: [
         date: [
           value_name: "DATE",
@@ -90,11 +100,15 @@ defmodule Lambdapad.Cli.Command.NewPost do
 
     {:ok, config} = Config.init(Blog.Base.get_configs(mod, rawargs), workdir)
 
+    interactive? = params[:interactive]
+
+    name = get(:string, interactive?, "name/slug", name)
+
     date =
       if date = params[:date] do
-        Date.from_iso8601!(date)
+        get(:date, interactive?, "date", Date.from_iso8601!(date))
       else
-        Date.utc_today()
+        get(:date, interactive?, "date", Date.utc_today())
       end
 
     bindings =
@@ -118,10 +132,23 @@ defmodule Lambdapad.Cli.Command.NewPost do
     {max_size, filled_headers} =
       Enum.reduce(headers, {0, []}, fn
         {header, nil}, {mx, acc} ->
-          {max(String.length(header), mx), [{header, ""} | acc]}
+          value = get(:string, interactive?, header, "")
+          {max(String.length(header), mx), [{header, value} | acc]}
 
         {header, value}, {mx, acc} ->
-          {value, _} = Code.eval_string(~s|"#{value}"|, bindings)
+          {value, _} =
+            try do
+              Code.eval_string(~s|"#{value}"|, bindings)
+            rescue
+              ce in CompileError ->
+                Cli.print_error(
+                  "during evaluation of \"#{header}\" in the configuration file: #{ce.description}"
+                )
+
+                {"", nil}
+            end
+
+          value = get(:string, interactive?, header, value)
           {max(String.length(header), mx), [{header, value} | acc]}
       end)
 
@@ -139,7 +166,7 @@ defmodule Lambdapad.Cli.Command.NewPost do
         when an unknown printer took a galley of type and scrambled it to make a type
         specimen book. It has survived not only five centuries, but also the leap
         into electronic typesetting, remaining essentially unchanged. It was
-        popularised in the 1960s with the release of Letraset sheets containing
+        popularized in the 1960s with the release of Letraset sheets containing
         Lorem Ipsum passages, and more recently with desktop publishing software
         like Aldus PageMaker including versions of Lorem Ipsum.
         """
@@ -166,5 +193,46 @@ defmodule Lambdapad.Cli.Command.NewPost do
     Cli.print_level2_ok()
     Cli.print_level1_ok(t)
     :ok = Cli.done(gt)
+  end
+
+  defp get(_, false, _name, value), do: value
+
+  defp get(:date, true, name, nil) do
+    IO.gets("#{name}> ")
+    |> String.trim()
+    |> Date.from_iso8601()
+    |> case do
+      {:ok, date} ->
+        get(:date, true, name, date)
+
+      {:error, _} ->
+        IO.puts("invalid date, please use format YYYY-MM-DD")
+        get(:date, true, name, nil)
+    end
+  end
+
+  defp get(:string, true, name, nil) do
+    IO.gets("#{name}> ")
+    |> String.trim()
+    |> then(&get(:string, true, name, &1))
+  end
+
+  defp get(kind, true, name, default) do
+    IO.gets("#{name} is #{inspect(to_string(default))}, change? (y)es (N)o (c)ancel ")
+    |> String.trim()
+    |> case do
+      resp when resp in ["", "n", "N"] ->
+        default
+
+      resp when resp in ["y", "Y"] ->
+        get(kind, true, name, nil)
+
+      resp when resp in ["c", "C"] ->
+        System.halt(@user_interrupt_code)
+
+      _otherwise ->
+        IO.puts("cannot understand input")
+        get(kind, true, name, default)
+    end
   end
 end
