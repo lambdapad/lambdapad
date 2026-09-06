@@ -1,0 +1,6 @@
+[blog]
+url = "http://localhost:8080/"
+
+[blog.template_headers]
+id = "#{slug}"
+title = "#{title}"
