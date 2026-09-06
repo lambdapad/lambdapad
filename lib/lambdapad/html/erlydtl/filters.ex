@@ -46,10 +46,12 @@ defmodule Lambdapad.Html.Erlydtl.Filters do
   the file and inject into the template only those lines from the
   text file.
 
-  As an example:
+  The lines spec is a `"first:last"` range and the colon is mandatory, even
+  when one side is left out (`"5:"` from line 5 to the end, `":5"` from the
+  start to line 5, `":"` the whole file). As an example:
 
   ```
-  {{ page.filename | read_file }}
+  {{ page.filename | read_file:"5:10" }}
   ```
   """
   @spec read_file(:undefined, lines_spec()) :: String.t()
@@ -64,7 +66,6 @@ defmodule Lambdapad.Html.Erlydtl.Filters do
     {first, last} = match_to_lines(Regex.run(pattern, lines_spec, opts), lines_spec)
 
     file
-    |> abs_filename()
     |> File.stream!()
     |> Stream.with_index(1)
     |> Stream.drop_while(fn {_, i} -> i < first end)
