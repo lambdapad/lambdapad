@@ -124,9 +124,8 @@ defmodule Lambdapad.Blog.Base do
     case Path.extname(filename) do
       "." <> extension ->
         mod = Module.concat([Lambdapad.Blog, Macro.camelize(extension)])
-        Code.ensure_loaded!(mod)
 
-        if function_exported?(mod, :compile, 1) do
+        if match?({:module, _}, Code.ensure_loaded(mod)) and function_exported?(mod, :compile, 1) do
           mod.compile(filename)
         else
           {:error, :module_not_found}
