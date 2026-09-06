@@ -1,3 +1,7 @@
+defmodule Lambdapad.Cli.Command.NotACommand do
+  @moduledoc "Shares the Command namespace but never `use`s the behaviour."
+end
+
 defmodule Lambdapad.Cli.CommandTest do
   use ExUnit.Case
   alias Lambdapad.Cli.Command
@@ -20,6 +24,10 @@ defmodule Lambdapad.Cli.CommandTest do
     assert Lambdapad.Cli.Command.Templates in modules
     assert Lambdapad.Cli.Command.Http in modules
     assert Lambdapad.Cli.Command.Clean in modules
+  end
+
+  test "get_modules/0 excludes modules under the namespace that do not implement command/1" do
+    refute Lambdapad.Cli.Command.NotACommand in Command.get_modules()
   end
 
   test "get_options/1 returns {name, options} for a module with options" do

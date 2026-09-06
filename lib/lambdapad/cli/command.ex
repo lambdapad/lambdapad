@@ -69,7 +69,11 @@ defmodule Lambdapad.Cli.Command do
   def get_modules do
     for {mod, _, _} <- :code.all_available(),
         String.starts_with?(to_string(mod), "Elixir.Lambdapad.Cli.Command."),
-        do: List.to_existing_atom(mod)
+        module = List.to_existing_atom(mod),
+        Code.ensure_loaded?(module),
+        function_exported?(module, :command, 1) do
+      module
+    end
   end
 
   @doc """
