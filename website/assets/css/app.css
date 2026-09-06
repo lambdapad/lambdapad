@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@import "../../node_modules/highlight.js/styles/atom-one-dark.css";

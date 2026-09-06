@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "alpinejs": "^3.15.1",
+    "highlight.js": "^11.11.1"
+  }
+}
