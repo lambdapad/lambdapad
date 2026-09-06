@@ -1,0 +1,6 @@
+<ul>
+<%= for post <- @posts do %><li><%= post[:id] %></li>
+<% end %></ul>
+<%= if @pager[:prev_url] do %>prev: <%= @pager[:prev_url] %>
+<% end %><%= if @pager[:next_url] do %>next: <%= @pager[:next_url] %>
+<% end %>
