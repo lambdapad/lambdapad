@@ -1,2 +1,4 @@
 [blog]
-url = "http://localhost:8080/"
+url = "https://lambdapad.com/"
+title = "Lambdapad"
+description = "Static website generator using Elixir or Erlang"
