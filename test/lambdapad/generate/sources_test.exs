@@ -170,6 +170,11 @@ defmodule Lambdapad.Generate.SourcesTest do
       assert render("subsup")["content_text"] == "Water is H~2~O and energy is E=mc^2^."
     end
 
+    test "does not crash when the parser reports a warning (e.g. an unclosed backtick)" do
+      assert render("unclosed_backtick")["content_text"] ==
+               "This paragraph has an unclosed backtick: `oops"
+    end
+
     test "keeps raw HTML blocks as literal text" do
       assert render("raw_html")["content_text"] ==
                "Before raw html.  <span>Raw HTML block</span>After raw html."

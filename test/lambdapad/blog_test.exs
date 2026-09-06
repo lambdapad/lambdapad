@@ -163,6 +163,15 @@ defmodule Lambdapad.BlogTest do
     end
   end
 
+  test "does not raise when a page has no `from` at all" do
+    file = Path.join([__DIR__, "../support/blog_no_source.exs"])
+    assert {:ok, mod} = Blog.Exs.compile(file)
+
+    config = Blog.Base.get_configs(mod, [])
+
+    assert %{"sitemap" => %{from: nil}} = Map.new(Blog.Base.get_pages(mod, config))
+  end
+
   test "blog_extended.exs" do
     file = Path.join([__DIR__, "../support/blog_extended.exs"])
     assert {:ok, mod} = Blog.Exs.compile(file)

@@ -76,16 +76,22 @@ defmodule Lambdapad.Html.Eex do
   def render(file, _module, working_dir, assigns) when is_binary(file) and is_list(assigns) do
     filename = Path.join([working_dir, file <> ".eex"])
     quoted = EEx.compile_file(filename, file: filename, engine: Phoenix.HTML.Engine)
-    env = [file: filename, line: 1]
+    module = Module.concat(__MODULE__, :"Partial#{System.unique_integer([:positive])}")
 
     quoted =
-      quote do
-        use Gettext, backend: Lambdapad.Blog.Gettext
-        unquote(quoted)
+      quote file: filename do
+        defmodule unquote(module) do
+          use Gettext, backend: Lambdapad.Blog.Gettext
+
+          def render(var!(assigns)) do
+            _ = var!(assigns)
+            unquote(quoted)
+          end
+        end
       end
 
-    {result, _bindings} = Code.eval_quoted(quoted, [assigns: assigns], env)
-    result
+    {{:module, ^module, _, _}, _bindings} = Code.eval_quoted(quoted)
+    module.render(assigns)
   end
 
   def render(vars, module, _working_dir, config) when is_list(vars) and is_list(config) do

@@ -116,14 +116,17 @@ defmodule Lambdapad.Generate.Sources do
   defp to_text(nil, _file), do: nil
 
   defp to_text(binary, file) do
-    binary
-    |> String.split("\n")
-    |> Padmark.Parser.as_ast(file: file)
-    |> ast_to_text()
-  end
+    {_status, ast, messages} =
+      binary
+      |> String.split("\n")
+      |> Padmark.Parser.as_ast(file: file)
 
-  defp ast_to_text({:ok, ast, []}) do
-    ast_to_text(ast, [])
+    Enum.each(messages, fn {:warning, line, message} ->
+      Cli.print_level2_warn([file, ":", to_string(line), " ", message])
+    end)
+
+    ast
+    |> ast_to_text([])
     |> Enum.reverse()
     |> Enum.join()
   end

@@ -84,6 +84,8 @@ defmodule Lambdapad do
       @doc false
       def pages(_), do: nil
 
+      defp translate_from(%{from: nil} = data), do: data
+
       defp translate_from(%{from: name} = data) when is_atom(name) do
         case __MODULE__.source(name) do
           nil -> raise "source #{name} undefined"
