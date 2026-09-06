@@ -6,7 +6,7 @@ group: Introduction
 You need only to get the code, from source code you can:
 
 ```
-git clone https://github.com/altenwald/lambdapad
+git clone https://github.com/lambdapad/lambdapad
 cd lambdapad
 mix deps.get
 mix escript.build

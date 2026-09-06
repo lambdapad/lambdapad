@@ -44,12 +44,13 @@ The `<!--more-->` tag is giving to Lambdapad the indication for where it should 
 set excerpt: true
 ```
 
-But we are not using the mark:
+And the mark is present, the text before it is used as the excerpt. But if we are not using the mark:
 
 ```
-This is the first paragraph.
+This is the first line.
+This is still the same paragraph.
 
 This is the second paragraph.
 ```
 
-Lambdapad is choosing the first paragraph as the excerpt automatically.
+Lambdapad falls back to the first **line** of the content, not the whole first paragraph. In the example above the excerpt would only be `This is the first line.`, so if your first paragraph spans more than one line, use `<!--more-->` explicitly instead of relying on the fallback.

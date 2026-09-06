@@ -201,7 +201,7 @@ The sets we can use for widgets are the following:
 - `transform_on_page` (function | string | list(function | string)) a lambda with two arguments saying what transformation we want to perform on the set of pages. We can use `transform` block to define a tranformation and use only the name here. We can add as many transformations as we need. See `transform` section for further information.
 - `transform_on_item` (function | string | list(function | strings)) a lambda with two arguments saying what transformation we want to perform on a single page each time. This is running once per item into the set of pages retrieved using `from`. We can add as many transformations as we need. See `transform` section for further information.
 - `headers` (boolean) is telling if the markdown files have headers or not. Default value is `true`.
-- `excerpt` (boolean) is telling if the markdown files have excerpt or not. Even if they have no excerpt and we configure this value to `true` the code is getting the first paragraph as excerpt. Default value is `true`.
+- `excerpt` (boolean) is telling if the markdown files have excerpt or not. If we configure this value to `true` and the `<!--more-->` mark is present, the text before it is used as the excerpt; otherwise the excerpt falls back to the first line of the content (not the first paragraph, so a soft-wrapped paragraph would be cut short). Default value is `true`.
 - `var_name` (string | :plain) it's setting the list of pages using the name provided here to be in use into the template. The default value is `:plain`.
 - `format` (:erlydtl) yes, it makes no sense to put this value at the moment, but in near future it's desirable to have also support for other template engines like `:eex`. [Keep in touch!][EEx].
 - `env` (map) it's letting us to define extra parameters for the template in a map format (see pages example for further information).
@@ -268,8 +268,8 @@ The sets we can use with `pages` are the following:
 - `transform_on_item` (function | string | list(function | string)) a lambda with two arguments saying what transformation we want to perform on a single page each time. This is running once per item into the set of pages retrieved using `from`. We can add as many transformations as we need. See `transform` section for further information.
 - `transform_to_persist` (function | string | list(function | string)) a lambda with two arguments saying what information should be persisted for the URL generated. The information will be retrieved for the following pages into the *config* under `url_data` using the URL as key and the persisted data as value.
 - `headers` (boolean) is telling if the markdown files have headers or not. Default value is `true`.
-- `excerpt` (boolean) is telling if the markdown files have excerpt or not. Even if they have no excerpt and we configure this value to `true` the code is getting the first paragraph as excerpt. Default value is `true`.
-- `var_name` (string | `:plain`) it's setting the list of pages using the name provided here to be in use into the template. The default value is `:plain`.
+- `excerpt` (boolean) is telling if the markdown files have excerpt or not. If we configure this value to `true` and the `<!--more-->` mark is present, the text before it is used as the excerpt; otherwise the excerpt falls back to the first line of the content (not the first paragraph, so a soft-wrapped paragraph would be cut short). Default value is `true`.
+- `var_name` (string | `:plain`) it's setting the list of pages using the name provided here to be in use into the template. The default value is `"page"`.
 - `format` (`:erlydtl`) yes, it makes no sense to put this value at the moment, but in near future it's desirable to have also support for other template engines like `:eex`. [Keep in touch!][EEx].
 - `env` (map) it's letting us to define extra parameters for the template in a map format:
 
@@ -279,7 +279,7 @@ The sets we can use with `pages` are the following:
   }
   ```
 
-- `priority` (`:high` | `:normal` | `:low`) indicates when the page will be generated. It's useful when we want to use `transform_to_persist` and generate `sitemaps` at the end of the generation of the blog.
+- `priority` (`:high` | `:low` | `0..100`) indicates when the page will be generated: pages are sorted by priority and generated in that order, and a lower number means a higher priority (it's generated earlier). `:high` is equivalent to `0` and `:low` is equivalent to `100`; if you don't set it, it defaults to `50`. It's useful when we want to use `transform_to_persist` and generate `sitemaps` at the end of the generation of the blog, for example by giving the sitemap page a `:low` priority.
 
 The way the pages are rendered into the files depends on the configuration. But mainly they follow these steps:
 

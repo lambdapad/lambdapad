@@ -6,7 +6,7 @@ group: Introduction
 
 ![lambdapad](/images/notepad.png)
 
-Static website generator using Elixir or Erlang. Yes! you can use (syntactic) _sugar_ to make _swetter_ your experience or Erlang to power the functional way to build your pages!
+Static website generator using Elixir or Erlang. Yes! you can use (syntactic) _sugar_ to make _sweeter_ your experience or Erlang to power the functional way to build your pages!
 
 If you love this content and want we can generate more, you can support us:
 
