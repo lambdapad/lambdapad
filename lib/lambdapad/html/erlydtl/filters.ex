@@ -104,7 +104,7 @@ defmodule Lambdapad.Html.Erlydtl.Filters do
 
   @spec markdown_to_html(String.t()) :: {:safe, String.t() | [String.t()]}
   def markdown_to_html(text) do
-    {_status, html, _messages} = Earmark.as_html(text, options())
+    {_status, html, _messages} = Padmark.as_html(text, options())
     {:safe, html}
   end
 end

@@ -52,13 +52,13 @@ defmodule Lambdapad.MixProject do
 
   defp deps do
     [
-      {:earmark, "~> 1.4"},
-      {:earmark_parser, "~> 1.4"},
-      {:erlydtl, github: "manuel-rubio/erlydtl"},
+      {:padmark, github: "lambdapad/padmark"},
+      {:erlydtl, github: "lambdapad/erlydtl"},
       {:pockets, "~> 1.0"},
       {:toml, "~> 0.6"},
       {:optimus, "~> 0.3"},
-      {:cowboy, "~> 2.8"},
+      {:bandit, "~> 1.12"},
+      {:plug, "~> 1.20"},
       {:floki, "~> 0.30"},
       {:phoenix_html, "~> 4.1"},
       {:gettext, "~> 1.0"},

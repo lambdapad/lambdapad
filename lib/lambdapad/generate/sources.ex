@@ -104,7 +104,7 @@ defmodule Lambdapad.Generate.Sources do
   defp to_html(nil, _file), do: nil
 
   defp to_html(binary, file) do
-    {_status, html, messages} = Earmark.as_html(binary, options())
+    {_status, html, messages} = Padmark.as_html(binary, options())
 
     Enum.each(messages, fn {:warning, line, message} ->
       Cli.print_level2_warn([file, ":", to_string(line), " ", message])
@@ -118,7 +118,7 @@ defmodule Lambdapad.Generate.Sources do
   defp to_text(binary, file) do
     binary
     |> String.split("\n")
-    |> EarmarkParser.as_ast(file: file)
+    |> Padmark.Parser.as_ast(file: file)
     |> ast_to_text()
   end
 
