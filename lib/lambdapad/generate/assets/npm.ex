@@ -31,10 +31,10 @@ defmodule Lambdapad.Generate.Assets.Npm do
   @doc false
   def run(data, package_json_path, _dst_path, _package_json_file) do
     path = Path.dirname(package_json_path)
-    args = ["i", path | data[:npm][:extra_args] || []]
+    args = ["i" | data[:npm][:extra_args] || []]
 
     opts = [
-      cd: File.cwd!(),
+      cd: path,
       stderr_to_stdout: true
     ]
 
