@@ -60,8 +60,19 @@ defmodule Lambdapad.Generate.SourcesTest do
     end
 
     test "renders footnotes (extension: [footnotes: true])" do
-      assert render("footnote")["content"] ==
-               "<p>\nHere is a statement with a footnote<a href=\"#fn:1\" id=\"fnref:1\" class=\"footnote\" title=\"see footnote\">1</a>.</p>\n<div class=\"footnotes\">\n  <hr>\n  <ol>\n    <li id=\"fn:1\">\n<a title=\"return to article\" href=\"#fnref:1\" class=\"reversefootnote\">&#x21A9;</a>      <p>\nThis is the footnote text.      </p>\n    </li>\n  </ol>\n</div>\n"
+      content = render("footnote")["content"]
+
+      # The backref tag's attribute order comes from Erlang map iteration,
+      # which is unspecified and has changed across OTP releases, so match
+      # it with a regex instead of a fixed attribute order.
+      assert content =~
+               "<p>\nHere is a statement with a footnote<a href=\"#fn:1\" id=\"fnref:1\" class=\"footnote\" title=\"see footnote\">1</a>.</p>\n<div class=\"footnotes\">\n  <hr>\n  <ol>\n    <li id=\"fn:1\">\n"
+
+      assert content =~
+               ~r/<a title="return to article" (?:href="#fnref:1" class="reversefootnote"|class="reversefootnote" href="#fnref:1")>&#x21A9;<\/a>/
+
+      assert content =~
+               "      <p>\nThis is the footnote text.      </p>\n    </li>\n  </ol>\n</div>\n"
     end
 
     test "renders subscript and superscript (extension: [sub_sup: true])" do
