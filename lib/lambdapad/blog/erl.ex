@@ -39,15 +39,20 @@ defmodule Lambdapad.Blog.Erl do
           Cli.print_level2_warn(warn)
         end
 
-        for {filename, lines} <- errors do
-          Cli.print_error("Found #{length(lines)} error(s) in #{filename}")
-
-          for {{row, col}, error, description} <- lines do
-            Cli.print_level2_error(filename, row, col, to_string(error), description)
-          end
-        end
+        print_compile_errors(errors)
 
         System.halt(1)
+    end
+  end
+
+  @doc false
+  def print_compile_errors(errors) do
+    for {filename, lines} <- errors do
+      Cli.print_error("Found #{length(lines)} error(s) in #{filename}")
+
+      for {{row, col}, error, description} <- lines do
+        Cli.print_level2_error(filename, row, col, to_string(error), description)
+      end
     end
   end
 
