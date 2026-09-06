@@ -36,3 +36,8 @@ samples/*/site
 /lpad
 .vscode
 .envrc
+
+# Tool binaries downloaded by the esbuild/tailwind mix deps when a website
+# under this repo generates its assets from the repo root.
+/esbuild-darwin-x64*
+/tailwind-macos-x64*
