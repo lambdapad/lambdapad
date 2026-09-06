@@ -1,0 +1,3 @@
+<ul>
+<%= for post <- @posts do %><li><%= post[:id] %></li>
+<% end %></ul>
