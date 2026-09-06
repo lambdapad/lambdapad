@@ -1,0 +1,5 @@
+[blog]
+url = "http://localhost:8080/"
+output_dir = "site"
+languages = ["en"]
+languages_path = "../gettext"

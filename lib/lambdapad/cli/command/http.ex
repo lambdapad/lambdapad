@@ -31,7 +31,7 @@ defmodule Lambdapad.Cli.Command.Http do
             case Integer.parse(p) do
               {port, ""} when port >= 1024 -> {:ok, port}
               {port, ""} -> {:error, "port must be greater than 1024, #{port} is invalid"}
-              {_, _} -> {:error, "you have to provide a port number"}
+              _ -> {:error, "you have to provide a port number"}
             end
           end,
           required: false
