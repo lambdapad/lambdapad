@@ -41,6 +41,8 @@ jobs:
       run: MIX_ENV=prod mix deps.get
     - name: Build the lpad escript
       run: MIX_ENV=prod mix escript.build
+    - name: Make the escript available for the website's download asset
+      run: cp lpad website/lpad
     - name: Generate the website
       run: ./lpad website/lambdapad.exs
     - name: Preserve the custom domain
