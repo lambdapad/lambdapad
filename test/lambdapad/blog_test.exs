@@ -152,6 +152,17 @@ defmodule Lambdapad.BlogTest do
            ] == Blog.Base.get_assets(mod, config)
   end
 
+  test "raises when a page references an undefined named source" do
+    file = Path.join([__DIR__, "../support/blog_undefined_source.exs"])
+    assert {:ok, mod} = Blog.Exs.compile(file)
+
+    config = Blog.Base.get_configs(mod, [])
+
+    assert_raise RuntimeError, "source missing_source undefined", fn ->
+      Blog.Base.get_pages(mod, config)
+    end
+  end
+
   test "blog_extended.exs" do
     file = Path.join([__DIR__, "../support/blog_extended.exs"])
     assert {:ok, mod} = Blog.Exs.compile(file)

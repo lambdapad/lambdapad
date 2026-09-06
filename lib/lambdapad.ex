@@ -85,7 +85,10 @@ defmodule Lambdapad do
       def pages(_), do: nil
 
       defp translate_from(%{from: name} = data) when is_atom(name) do
-        Map.put(data, :from, __MODULE__.source(name)) || raise "source #{name} undefined"
+        case __MODULE__.source(name) do
+          nil -> raise "source #{name} undefined"
+          source -> Map.put(data, :from, source)
+        end
       end
 
       defp translate_from(%{} = data), do: data
