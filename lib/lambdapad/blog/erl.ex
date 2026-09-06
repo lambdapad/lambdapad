@@ -41,7 +41,7 @@ defmodule Lambdapad.Blog.Erl do
 
         print_compile_errors(errors)
 
-        System.halt(1)
+        Cli.halt(1)
     end
   end
 

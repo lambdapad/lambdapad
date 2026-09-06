@@ -17,6 +17,19 @@ defmodule Lambdapad.Cli do
 
   @default_verbosity 1
 
+  @doc """
+  Stops the CLI with the given exit code. Under `MIX_ENV=test` this
+  throws `{:halt, code}` instead of really halting the VM, so error
+  paths that would otherwise kill the test runner can be exercised
+  with `catch_throw/1`.
+  """
+  @spec halt(non_neg_integer()) :: no_return()
+  if Mix.env() == :test do
+    def halt(code), do: throw({:halt, code})
+  else
+    def halt(code), do: System.halt(code)
+  end
+
   defp absname("."), do: File.cwd!()
   defp absname(dir), do: Path.absname(dir)
 
@@ -27,7 +40,7 @@ defmodule Lambdapad.Cli do
   def cwd!(lambdapad_file) do
     unless File.exists?(lambdapad_file) do
       IO.puts("File #{lambdapad_file} not found.")
-      System.halt(1)
+      halt(1)
     end
 
     absname(Path.dirname(lambdapad_file))
@@ -79,7 +92,7 @@ defmodule Lambdapad.Cli do
       mod.command(data)
     else
       print_error("unknown subcommand #{subcommand}")
-      System.halt(1)
+      halt(1)
     end
   end
 

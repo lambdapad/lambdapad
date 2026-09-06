@@ -44,6 +44,16 @@ defmodule Lambdapad.ConfigTest do
       assert blog_data["title"] == "My Blog"
       assert extra_data["title"] == "My Blog"
     end
+
+    test "halts when the config file cannot be read" do
+      config = %{format: :toml, from: "missing.toml"}
+      assert catch_throw(Config.init(config, @workdir)) == {:halt, 1}
+    end
+
+    test "halts when the config data is not a map" do
+      config = %{format: :eterm, from: "not_a_map.config"}
+      assert catch_throw(Config.init(config, @workdir)) == {:halt, 1}
+    end
   end
 
   describe "to_proplist/1" do

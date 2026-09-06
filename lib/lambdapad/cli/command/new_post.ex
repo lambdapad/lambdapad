@@ -228,7 +228,7 @@ defmodule Lambdapad.Cli.Command.NewPost do
         get(kind, true, name, nil)
 
       resp when resp in ["c", "C"] ->
-        System.halt(@user_interrupt_code)
+        Cli.halt(@user_interrupt_code)
 
       _otherwise ->
         IO.puts("cannot understand input")

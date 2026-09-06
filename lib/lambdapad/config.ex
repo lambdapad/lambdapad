@@ -88,11 +88,11 @@ defmodule Lambdapad.Config do
 
       {:ok, config_data} ->
         Cli.print_error("config data MUST be a map. Getting: #{inspect(config_data)}")
-        System.halt(1)
+        Cli.halt(1)
 
       {:error, error} ->
         Cli.print_error("reading #{file}: #{inspect(error)}")
-        System.halt(1)
+        Cli.halt(1)
     end
   end
 

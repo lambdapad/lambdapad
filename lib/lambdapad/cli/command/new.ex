@@ -40,14 +40,14 @@ defmodule Lambdapad.Cli.Command.New do
   def command(%{name: name, template: template, verbosity: loglevel}) do
     if File.exists?(name) do
       Cli.print_error("cannot create #{name} directory.")
-      System.halt(1)
+      Cli.halt(1)
     end
 
     files = get_template_files(template)
 
     unless files do
       Cli.print_error("template #{template} not found.")
-      System.halt(1)
+      Cli.halt(1)
     end
 
     Application.put_env(:lambdapad, :loglevel, loglevel)

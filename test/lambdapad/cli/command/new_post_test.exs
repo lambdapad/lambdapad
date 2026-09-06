@@ -55,4 +55,21 @@ defmodule Lambdapad.Cli.Command.NewPostTest do
 
     File.rm_rf!(Path.join(@bound_workdir, "posts"))
   end
+
+  test "halts with the user-interrupt code when cancelling an interactive prompt" do
+    params = %{
+      name: "cancelled-post",
+      infile: @infile,
+      rawargs: [],
+      date: nil,
+      bind: [],
+      "posts-dir": nil,
+      interactive: true,
+      loglevel: 1
+    }
+
+    assert catch_throw(capture_io("c\n", fn -> NewPost.command(params) end)) == {:halt, 137}
+
+    refute File.exists?(Path.join(@workdir, "posts"))
+  end
 end
