@@ -285,9 +285,11 @@ defmodule Lambdapad do
   end
 
   defmacro extension(file) do
-    file
+    path = Path.join(Path.dirname(__CALLER__.file), file)
+
+    path
     |> File.read!()
-    |> Code.string_to_quoted!(file: file)
+    |> Code.string_to_quoted!(file: path)
   end
 
   defmacro doc(_text), do: nil

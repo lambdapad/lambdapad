@@ -7,7 +7,7 @@ blog do
     set(var_name: "blog")
   end
 
-  extension("test/support/blog_extension.exs")
+  extension("blog_extension.exs")
 
   assets "files" do
     set(from: "assets/*.css")
