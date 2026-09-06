@@ -252,4 +252,12 @@ defmodule Lambdapad.BlogTest do
               }}
            ] == Blog.Base.get_assets(mod, config)
   end
+
+  test "check_blog.exs: a check block is compiled and runnable" do
+    file = Path.join([__DIR__, "../support/check_blog.exs"])
+    assert {:ok, mod} = Blog.Exs.compile(file)
+
+    assert %{"no broken links" => %{on: :finish, run: run}} = Blog.Base.get_checks(mod)
+    assert run.(%{"checked" => false}) == %{"checked" => true}
+  end
 end
