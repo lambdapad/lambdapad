@@ -23,7 +23,7 @@ defmodule Lambdapad.Generate.Pages do
     languages = cfg["blog"]["languages"] || [@default_language]
     languages_path = cfg["blog"]["languages_path"] || @default_languages_path
 
-    {:ok, gettext_mod} = Lambdapad.Gettext.compile(languages_path)
+    {:ok, gettext_mod} = Lambdapad.Gettext.compile(Path.join(workdir, languages_path))
 
     Enum.reduce(languages, cfg, fn language, config ->
       Gettext.put_locale(gettext_mod, language)

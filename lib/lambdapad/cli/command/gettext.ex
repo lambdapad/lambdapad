@@ -12,6 +12,7 @@ defmodule Lambdapad.Cli.Command.Gettext do
   alias Lambdapad.Generate.{Pages, Sources, Widgets}
 
   @default_language "en"
+  @default_languages_path "gettext"
   @opts [fuzzy: false, fuzzy_threshold: 1.0]
 
   @impl Lambdapad.Cli.Command
@@ -41,7 +42,8 @@ defmodule Lambdapad.Cli.Command.Gettext do
     {:ok, config} = Config.init(Blog.Base.get_configs(mod, rawargs), workdir)
     Cli.print_level1_ok(gt)
 
-    languages_path = config["blog"]["languages_path"]
+    languages_path =
+      Path.join(workdir, config["blog"]["languages_path"] || @default_languages_path)
 
     t = Cli.print_level1("Generate translations")
     Cli.print_level2("generate POT files in", languages_path)
@@ -79,10 +81,14 @@ defmodule Lambdapad.Cli.Command.Gettext do
   end
 
   defp run_message_extraction(pot_files) do
-    Enum.each(pot_files, fn {path, contents} ->
-      File.mkdir_p!(Path.dirname(path))
-      File.write!(path, contents)
-      Cli.print_level3("Extracted #{Path.relative_to_cwd(path)}")
+    Enum.each(pot_files, fn
+      {path, {:changed, contents}} ->
+        File.mkdir_p!(Path.dirname(path))
+        File.write!(path, contents)
+        Cli.print_level3("Extracted #{Path.relative_to_cwd(path)}")
+
+      {_path, :unchanged} ->
+        :ok
     end)
   end
 

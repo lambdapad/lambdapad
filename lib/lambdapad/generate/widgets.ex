@@ -30,7 +30,7 @@ defmodule Lambdapad.Generate.Widgets do
     languages = config["blog"]["languages"] || [@default_language]
     languages_path = config["blog"]["languages_path"] || @default_languages_path
 
-    {:ok, gettext_mod} = Lambdapad.Gettext.compile(languages_path)
+    {:ok, gettext_mod} = Lambdapad.Gettext.compile(Path.join(workdir, languages_path))
 
     Enum.reduce(languages, %{}, fn language, acc ->
       Gettext.put_locale(gettext_mod, language)

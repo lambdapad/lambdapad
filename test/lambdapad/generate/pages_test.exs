@@ -9,7 +9,7 @@ defmodule Lambdapad.Generate.PagesTest do
       "blog" => %{
         "url" => "http://localhost:8080/",
         "languages" => ["es"],
-        "languages_path" => "test/support/gettext"
+        "languages_path" => "gettext"
       }
     }
 
@@ -31,7 +31,7 @@ defmodule Lambdapad.Generate.PagesTest do
 
     assert """
            <title>Hola mundo</title>
-           [languages: ["es"], languages_path: "test/support/gettext", url: "http://localhost:8080/"]
+           [languages: ["es"], languages_path: "gettext", url: "http://localhost:8080/"]
            ----------
            <h1>
            Hello</h1>
