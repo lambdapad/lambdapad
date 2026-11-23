@@ -67,6 +67,44 @@ defmodule Lambdapad.OgImage do
   def generate_og(post, images_dir), do: generate(post, images_dir, @og)
   def generate_x(post, images_dir), do: generate(post, images_dir, @x)
 
+  def generate_brand_og(card, images_dir), do: generate_brand(card, images_dir, @og)
+  def generate_brand_x(card, images_dir), do: generate_brand(card, images_dir, @x)
+
+  defp generate_brand(card, images_dir, cfg) do
+    featured = encode_file(Path.join(images_dir, "notepad.png"), "image/png")
+    {font_size, line_height, lines} = fit_title(card.headline, cfg)
+    first_y = title_first_y(lines, font_size, line_height, cfg)
+    {grad_id, c1, c2} = card.gradient
+
+    featured_tag =
+      if featured do
+        ~s(<image href="#{featured}" x="#{cfg.featured_x}" y="#{cfg.featured_y}" width="#{cfg.featured_size}" height="#{cfg.featured_size}" preserveAspectRatio="xMidYMid meet"/>)
+      else
+        ""
+      end
+
+    """
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="#{cfg.w}" height="#{cfg.h}" viewBox="0 0 #{cfg.w} #{cfg.h}">
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#{c1}"/>
+          <stop offset="100%" stop-color="#{c2}"/>
+        </linearGradient>
+      </defs>
+      <g id="#{grad_id}">
+        <rect width="#{cfg.w}" height="#{cfg.h}" fill="url(#grad)"/>
+        <rect x="#{cfg.padding}" y="#{cfg.logo_y + 12}" width="#{String.length(card.badge) * 14 + 32}" height="38" rx="19" fill="#38BDF8" fill-opacity="0.15" stroke="#38BDF8" stroke-opacity="0.45" stroke-width="1.5"/>
+        <text x="#{cfg.padding + 16}" y="#{cfg.logo_y + 37}" font-family="Arial, Helvetica, Liberation Sans, DejaVu Sans, Ubuntu, sans-serif" font-size="#{cfg.meta_size - 2}" font-weight="bold" fill="#38BDF8" letter-spacing="1.5">#{escape(card.badge)}</text>
+        <text font-family="Arial, Helvetica, Liberation Sans, DejaVu Sans, Ubuntu, sans-serif" font-size="#{font_size}" font-weight="bold" fill="white">#{render_tspans(lines, cfg.padding, first_y, line_height)}</text>
+        <line x1="#{cfg.padding}" y1="#{cfg.separator_y}" x2="#{cfg.separator_x2}" y2="#{cfg.separator_y}" stroke="white" stroke-opacity="0.45" stroke-width="2"/>
+        <text x="#{cfg.padding}" y="#{cfg.date_y}" font-family="Arial, Helvetica, Liberation Sans, DejaVu Sans, Ubuntu, sans-serif" font-size="#{cfg.date_size}" fill="white" fill-opacity="0.9">#{escape(card.tagline)}</text>
+        <text x="#{cfg.padding}" y="#{cfg.meta_y}" font-family="Arial, Helvetica, Liberation Sans, DejaVu Sans, Ubuntu, sans-serif" font-size="#{cfg.meta_size}" font-weight="bold" fill="#38BDF8">#{escape(card.url)}</text>
+        #{featured_tag}
+      </g>
+    </svg>
+    """
+  end
+
   defp generate(post, images_dir, cfg) do
     featured = encode_file(Path.join(images_dir, "notepad.png"), "image/png")
     date = format_date(post["date"], post["type"])
@@ -252,29 +290,31 @@ end)
 
 static_cards = [
   %{
-    "id" => "blog",
-    "title" => "Lambdapad Blog: Releases, Architecture & Guides",
-    "type" => "Updates & Articles",
-    "date" => "lambdapad.com/blog"
+    id: "blog",
+    badge: "BLOG & ARTICLES",
+    headline: "Lambdapad Blog: Releases, Architecture & Guides",
+    tagline: "Tutorials, engineering notes & RSS feed",
+    url: "lambdapad.com/blog",
+    gradient: {"indigo-sky", "#1E1B4B", "#0EA5E9"}
   },
   %{
-    "id" => "default",
-    "title" => "Lambdapad: Static Website Generator on the BEAM",
-    "type" => "Elixir & Erlang",
-    "date" => "lambdapad.com"
+    id: "default",
+    badge: "STATIC SITE GENERATOR",
+    headline: "Lambdapad: Static Websites on the BEAM",
+    tagline: "Elixir & Erlang  ·  ErlyDTL  ·  Padmark  ·  lpad CLI",
+    url: "lambdapad.com",
+    gradient: {"slate-sky", "#0F172A", "#0284C7"}
   }
 ]
 
 Enum.each(static_cards, fn card ->
-  id = card["id"]
-
-  og_svg = Lambdapad.OgImage.generate_og(card, images_dir)
+  og_svg = Lambdapad.OgImage.generate_brand_og(card, images_dir)
   {:ok, og_png} = Resvg.svg_string_to_png_buffer(og_svg, resvg_opts)
-  File.write!(Path.join(og_dir, "#{id}.png"), og_png)
+  File.write!(Path.join(og_dir, "#{card.id}.png"), og_png)
 
-  x_svg = Lambdapad.OgImage.generate_x(card, images_dir)
+  x_svg = Lambdapad.OgImage.generate_brand_x(card, images_dir)
   {:ok, x_png} = Resvg.svg_string_to_png_buffer(x_svg, resvg_opts)
-  File.write!(Path.join(x_dir, "#{id}.png"), x_png)
+  File.write!(Path.join(x_dir, "#{card.id}.png"), x_png)
 
-  IO.puts("Generated OG & X cards for #{id}")
+  IO.puts("Generated brand OG & X cards for #{card.id}")
 end)
