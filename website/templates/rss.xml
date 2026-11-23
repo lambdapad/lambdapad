@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ blog.title }} Blog</title>
+    <link>{{ blog.url }}blog</link>
+    <description>{{ blog.description }}</description>
+    <language>en</language>
+    <atom:link href="{{ blog.url }}blog/rss.xml" rel="self" type="application/rss+xml" />
+    {% for post in posts %}
+    <item>
+      <title>{{ post.title | escape }}</title>
+      <link>{{ blog.url }}blog/{{ post.id }}</link>
+      <guid isPermaLink="true">{{ blog.url }}blog/{{ post.id }}</guid>
+      <pubDate>{{ post._date.rfc2822 }}</pubDate>
+      {% if post._author.name %}<author>{{ post._author.name | escape }}</author>{% endif %}
+      <description><![CDATA[{{ post.excerpt | safe }}]]></description>
+    </item>
+    {% endfor %}
+  </channel>
+</rss>

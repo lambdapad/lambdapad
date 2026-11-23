@@ -1,0 +1,45 @@
+{% include "head.html" %}
+<body class="flex h-full flex-col bg-white dark:bg-slate-900">
+    {% include "header.html" %}
+    <main class="min-h-full">
+        <div class="relative mx-auto flex w-full max-w-4xl flex-auto justify-center px-4 py-16 sm:px-6 lg:px-8">
+            <div class="w-full min-w-0">
+                <div class="mb-8">
+                    <a href="/blog" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                        &larr; Back to Blog
+                    </a>
+                </div>
+                <article class="prose dark:prose-invert max-w-none">
+                    <header class="mb-9 space-y-2 not-prose">
+                        {% if post.type %}
+                        <p class="font-display text-sm font-medium text-sky-500">{{ post.type }}</p>
+                        {% endif %}
+                        <h1 class="font-display text-3xl tracking-tight text-slate-900 dark:text-white">{{ post.title }}</h1>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
+                            <time datetime="{{ post.date }}">{{ post._date.formatted }}</time>
+                            {% if post._author.name %}
+                            <span aria-hidden="true">&middot;</span>
+                            <span>By {{ post._author.name }}</span>
+                            {% endif %}
+                        </div>
+                    </header>
+                    {{ post.content | safe }}
+                </article>
+                <dl class="mt-12 flex items-center justify-between border-t border-slate-200 pt-6 dark:border-slate-800">
+                    <div>
+                        <dt class="font-display text-sm font-medium text-slate-900 dark:text-white">Published</dt>
+                        <dd class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            <time datetime="{{ post.date }}">{{ post._date.formatted }}</time>
+                        </dd>
+                    </div>
+                    <div>
+                        <a href="/blog/rss.xml" class="text-sm font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
+                            Subscribe via RSS
+                        </a>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </main>
+    {% include "footer.html" %}
+{% include "end.html" %}

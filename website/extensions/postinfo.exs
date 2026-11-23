@@ -48,12 +48,21 @@ transform "date" do
 
   set(
     run: fn post, _config ->
-      %{day: day, month: month, year: year} = Date.from_iso8601!(post["date"])
+      date = Date.from_iso8601!(post["date"])
+      %{day: day, month: month, year: year} = date
+
+      day_names = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
+      month_names = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+      dow = elem(day_names, Date.day_of_week(date) - 1)
+      mon = elem(month_names, month - 1)
+      day_str = String.pad_leading(to_string(day), 2, "0")
 
       Map.put(post, "_date", %{
-        day: String.pad_leading(to_string(day), 2, "0"),
+        day: day_str,
         month: String.pad_leading(to_string(month), 2, "0"),
-        year: to_string(year)
+        year: to_string(year),
+        formatted: "#{mon} #{day}, #{year}",
+        rfc2822: "#{dow}, #{day_str} #{mon} #{year} 00:00:00 +0000"
       })
     end
   )

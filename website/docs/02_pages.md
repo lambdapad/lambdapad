@@ -5,9 +5,9 @@ group: Core Concepts
 
 [MD]: https://daringfireball.net/projects/markdown/syntax
 
-We are using [Markdown][MD] for writing the docs and these markdown files have a header which usually should content the following fields for `posts`:
+We are using [Markdown][MD] for writing the docs and these markdown files have a header which usually should contain the following fields for `posts`:
 
-```
+```markdown
 id: hello-world
 title: Hello World!
 author: Manuel Rubio
@@ -27,11 +27,11 @@ The header isn't mandatory but if we want to skip it, we have to configure for t
 set headers: false
 ```
 
-Whe we skip the header the `id` is set as the name of the file removing the extension.
+When we skip the header the `id` is set as the name of the file removing the extension.
 
 In the same way, we can write a content which have included an excerpt:
 
-```
+```markdown
 This is the excerpt of my post.
 <!--more-->
 
@@ -46,7 +46,7 @@ set excerpt: true
 
 And the mark is present, the text before it is used as the excerpt. But if we are not using the mark:
 
-```
+```markdown
 This is the first line.
 This is still the same paragraph.
 

@@ -1,0 +1,53 @@
+{% include "head.html" %}
+<body class="flex h-full flex-col bg-white dark:bg-slate-900">
+    {% include "header.html" %}
+    <main class="min-h-full">
+        <div class="relative mx-auto flex w-full max-w-4xl flex-auto justify-center px-4 py-16 sm:px-6 lg:px-8">
+            <div class="w-full min-w-0">
+                <header class="mb-12 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-8 dark:border-slate-800">
+                    <div class="space-y-2">
+                        <p class="font-display text-sm font-medium text-sky-500">Updates &amp; Articles</p>
+                        <h1 class="font-display text-3xl tracking-tight text-slate-900 dark:text-white">Blog</h1>
+                        <p class="text-base text-slate-600 dark:text-slate-400">Releases, architecture notes, and practical guides for Lambdapad.</p>
+                    </div>
+                    <a href="/blog/rss.xml" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4 text-orange-500">
+                            <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/>
+                        </svg>
+                        RSS Feed
+                    </a>
+                </header>
+
+                <div class="divide-y divide-slate-200 dark:divide-slate-800">
+                    {% for post in posts %}
+                    <article class="py-10 first:pt-0">
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
+                            <time datetime="{{ post.date }}">{{ post._date.formatted }}</time>
+                            {% if post.type %}
+                            <span aria-hidden="true">&middot;</span>
+                            <span class="font-medium text-sky-600 dark:text-sky-400">{{ post.type }}</span>
+                            {% endif %}
+                            {% if post._author.name %}
+                            <span aria-hidden="true">&middot;</span>
+                            <span>{{ post._author.name }}</span>
+                            {% endif %}
+                        </div>
+                        <h2 class="mt-2 font-display text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                            <a href="/blog/{{ post.id }}" class="hover:text-sky-600 dark:hover:text-sky-400">{{ post.title }}</a>
+                        </h2>
+                        <div class="prose mt-4 dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
+                            {{ post.excerpt | safe }}
+                        </div>
+                        <div class="mt-4">
+                            <a href="/blog/{{ post.id }}" class="inline-flex items-center gap-1 text-sm font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">
+                                Read article &rarr;
+                            </a>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+    {% include "footer.html" %}
+{% include "end.html" %}

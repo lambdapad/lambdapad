@@ -17,13 +17,38 @@ blog do
   source(pages: "pages/**/*.md")
   source(docs: "docs/**/*.md")
 
-  # pages "posts" do
-  #   set from: :posts
-  #   set uri: "/{{ post._date.year }}/{{ post._date.month }}/{{ post._date.day }}/{{ post.id }}"
-  #   set var_name: "post"
-  #   set template: "post.html"
-  #   set transform_on_item: ["date"]
-  # end
+  pages "posts" do
+    set(from: :posts)
+    set(uri: "/blog/{{ post.id }}")
+    set(var_name: "post")
+    set(excerpt: false)
+    set(headers: true)
+    set(template: "post.html")
+    set(transform_on_item: ["date", "author"])
+  end
+
+  pages "blog" do
+    set(from: :posts)
+    set(uri: "/blog")
+    set(var_name: "posts")
+    set(index: true)
+    set(excerpt: true)
+    set(template: "blog.html")
+    set(transform_on_item: ["date", "author"])
+    set(transform_on_page: ["order by date desc"])
+  end
+
+  pages "rss" do
+    set(from: :posts)
+    set(uri: "/blog/rss.xml")
+    set(uri_type: :file)
+    set(var_name: "posts")
+    set(index: true)
+    set(excerpt: true)
+    set(template: "rss.xml")
+    set(transform_on_item: ["date", "author"])
+    set(transform_on_page: ["order by date desc"])
+  end
 
   assets "general" do
     set(from: "assets/{favicons,images,webfonts}/**")
