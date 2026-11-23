@@ -51,12 +51,16 @@ defmodule Lambdapad.Cli.Command.Http do
     port = port || config["http"]["port"] || @default_port
 
     Http.start_server(port, dir)
+    loop(params, rawargs)
+  end
+
+  defp loop(params, rawargs) do
     IO.puts([IO.ANSI.green(), "options", IO.ANSI.reset(), ": [q]uit or [r]ecompile"])
 
     if IO.gets("") == "r\n" do
       verbosity = params[:verbosity] || @default_verbosity
       Compile.command(%{infile: params[:infile], verbosity: verbosity, rawargs: rawargs})
-      command(params)
+      loop(params, rawargs)
     else
       :ok
     end

@@ -79,6 +79,7 @@ defmodule Lambdapad.Cli.Command do
   @doc """
   Retrieves the configuration of the module for the CLI.
   """
+  @spec get_options(module()) :: {atom(), Optimus.spec()} | nil
   def get_options(module) do
     if options = module.options() do
       name =

@@ -15,6 +15,16 @@ defmodule Lambdapad.Cli.Command.HttpTest do
     assert output =~ "options"
   end
 
+  test "recompiles on r without crashing Bandit and then exits on q" do
+    port = 8000 + rem(System.unique_integer([:positive]), 1000)
+    params = %{infile: @infile, port: port, verbosity: 1, rawargs: []}
+
+    output = capture_io("r\nq\n", fn -> assert :ok = Http.command(params) end)
+
+    assert output =~ "HTTP Server on"
+    assert output =~ "Reading configuration"
+  end
+
   test "options/0 declares the port option with a parser rejecting low ports" do
     parser = Http.options()[:options][:port][:parser]
 

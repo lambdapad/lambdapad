@@ -31,7 +31,7 @@ defmodule Lambdapad.Html.Erlydtl.Filters do
   Read a file and return the content to be injected into the HTML file
   for the template.
   """
-  @spec read_file(filename()) :: String.t()
+  @spec read_file(:undefined | filename()) :: String.t()
   def read_file(:undefined), do: ""
 
   def read_file(file) do
@@ -62,7 +62,7 @@ defmodule Lambdapad.Html.Erlydtl.Filters do
     file = abs_filename(file)
 
     pattern = ~r/^([0-9]+)?:(-?[0-9]+)?$/
-    opts = [:binary, capture: :all_but_first]
+    opts = [capture: :all_but_first]
     {first, last} = match_to_lines(Regex.run(pattern, lines_spec, opts), lines_spec)
 
     file

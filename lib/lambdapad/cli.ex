@@ -349,18 +349,20 @@ defmodule Lambdapad.Cli do
     spec = Config.lambdapad_metainfo()["lambdapad"]
 
     Optimus.new!(
-      description: spec["name"],
-      version: spec["vsn"],
-      about: spec["description"],
+      description: to_string(spec["name"]),
+      version: to_string(spec["vsn"]),
+      about: to_string(spec["description"]),
       allow_unknown_args: false,
       parse_double_dash: true,
       args: get_infile_options(),
       flags: get_verbosity_options(),
-      subcommands:
-        Command.get_modules()
-        |> Enum.map(&Command.get_options/1)
-        |> Enum.reject(&is_nil/1)
+      subcommands: get_subcommands()
     )
     |> Optimus.parse!(args)
+  end
+
+  @spec get_subcommands() :: [{atom(), Optimus.spec()}]
+  defp get_subcommands do
+    for mod <- Command.get_modules(), sub = Command.get_options(mod), do: sub
   end
 end

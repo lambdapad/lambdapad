@@ -15,7 +15,7 @@ defmodule Lambdapad.Config do
   ok-tuple with the map with the data inside or an error-tuple with the
   reason as an atom.
   """
-  @callback read_data(filename(), workdir()) :: {:ok, map()} | {:error, atom()}
+  @callback read_data(filename(), workdir()) :: {:ok, map()} | {:error, term()}
 
   @doc """
   Get information about Lambdapad and when the command was launched.
