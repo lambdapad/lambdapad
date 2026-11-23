@@ -48,12 +48,22 @@ defmodule Lambdapad.Generate.Assets.Tailwind do
     else
       try do
         Tailwind.install()
+        maybe_codesign(bin_path)
         :ok
       rescue
         reason in RuntimeError ->
           {:error, reason.message}
       end
     end
+  end
+
+  defp maybe_codesign(bin_path) do
+    with {:unix, :darwin} <- :os.type(),
+         codesign when is_binary(codesign) <- System.find_executable("codesign") do
+      System.cmd(codesign, ["--force", "--sign", "-", bin_path], stderr_to_stdout: true)
+    end
+
+    :ok
   end
 
   defp run_tailwind(data, src_file, dst_path, base_file) do

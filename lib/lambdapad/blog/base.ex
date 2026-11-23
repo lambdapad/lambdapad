@@ -73,7 +73,7 @@ defmodule Lambdapad.Blog.Base do
   end
 
   @doc false
-  def assets([]), do: %{"general" => Blog.assets("general")}
+  def assets([]), do: %{"general" => %{from: "assets/**", to: "site/"}}
 
   def assets(assets) do
     assets

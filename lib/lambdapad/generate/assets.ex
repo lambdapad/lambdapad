@@ -37,8 +37,15 @@ defmodule Lambdapad.Generate.Assets do
       Enum.each(Path.wildcard(src_path), fn file ->
         base_file = String.replace_prefix(file, base_src_path, "")
         print_file = get_print_file(base_file, file)
-        process_file(data, file, dst_path, base_file)
-        Cli.print_level3(print_file)
+
+        case process_file(data, file, dst_path, base_file) do
+          :ok ->
+            Cli.print_level3(print_file)
+
+          {:error, reason} ->
+            Cli.print_error("Asset processing failed for #{print_file}: #{format_error(reason)}")
+            Cli.halt(1)
+        end
       end)
 
       Cli.print_level2_ok()
@@ -69,4 +76,16 @@ defmodule Lambdapad.Generate.Assets do
 
     :ok
   end
+
+  defp format_error(137) do
+    if :os.type() == {:unix, :darwin} do
+      "exit code 137 (SIGKILL — binary may need codesign on macOS)"
+    else
+      "exit code 137 (SIGKILL)"
+    end
+  end
+
+  defp format_error(code) when is_integer(code), do: "exit code #{code}"
+  defp format_error(reason) when is_binary(reason), do: reason
+  defp format_error(reason), do: inspect(reason)
 end
