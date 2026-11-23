@@ -53,15 +53,10 @@ Type "lpad"
 Enter
 Sleep 2500ms
 
-Type "lpad http &"
+Type "lpad http"
 Enter
-Sleep 2500ms
-
-Type "curl -sI http://localhost:8080/ | head -n 4"
-Enter
-Sleep 2500ms
+Sleep 3s
 
 Hide
-Type "kill %1 2>/dev/null || true"
-Enter
+Ctrl+C
 Sleep 500ms
