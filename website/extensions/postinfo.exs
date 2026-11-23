@@ -127,3 +127,13 @@ transform "order by date desc" do
     end
   )
 end
+
+transform "take 3" do
+  set(on: :page)
+
+  set(
+    run: fn posts, _config ->
+      Enum.take(posts, 3)
+    end
+  )
+end

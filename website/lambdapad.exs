@@ -83,6 +83,16 @@ blog do
     set(to: "site/download/lpad")
   end
 
+  widget "recent_posts" do
+    set(from: :posts)
+    set(var_name: "posts")
+    set(index: true)
+    set(excerpt: true)
+    set(template: "recent_posts.html")
+    set(transform_on_item: ["date", "author"])
+    set(transform_on_page: ["order by date desc", "take 3"])
+  end
+
   pages "index" do
     set(template: "index.html")
     set(uri: "/")
