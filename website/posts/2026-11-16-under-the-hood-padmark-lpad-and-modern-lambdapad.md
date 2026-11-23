@@ -3,6 +3,7 @@ date: 2026-11-16
 title: Under the Hood: Padmark, lpad CLI, and Modern Lambdapad
 author: manuel
 type: Engineering
+image: /images/blog/under-the-hood-padmark-lpad-and-modern-lambdapad.jpg
 
 Over the past few weeks we have been tightening up the entire Lambdapad stack—from Markdown parsing and dark-mode rendering on `lambdapad.com` to automated builds and standalone CLI packaging.
 

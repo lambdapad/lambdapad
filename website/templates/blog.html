@@ -21,6 +21,11 @@
                 <div class="divide-y divide-slate-200 dark:divide-slate-800">
                     {% for post in posts %}
                     <article class="py-10 first:pt-0">
+                        {% if post.image %}
+                        <a href="/blog/{{ post.id }}" class="mb-6 block overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+                            <img src="{{ post.image }}" alt="{{ post.title }}" class="aspect-video w-full object-cover transition duration-300 hover:scale-[1.01]" loading="lazy" />
+                        </a>
+                        {% endif %}
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
                             <time datetime="{{ post.date }}">{{ post._date.formatted }}</time>
                             {% if post.type %}

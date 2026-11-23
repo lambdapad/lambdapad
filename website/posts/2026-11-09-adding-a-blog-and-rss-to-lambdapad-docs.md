@@ -3,6 +3,7 @@ date: 2026-11-09
 title: Adding a Blog and RSS Feed to a Lambdapad Docs Site
 author: manuel
 type: Tutorial
+image: /images/blog/adding-a-blog-and-rss-to-lambdapad-docs.jpg
 
 This website started with a landing page, documentation under `/docs`, and static pages like `/about`. Adding a full blog with clean SEO-friendly URLs and an RSS 2.0 feed only takes a few lines in `lambdapad.exs` and three templates.
 

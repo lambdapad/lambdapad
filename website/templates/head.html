@@ -21,9 +21,13 @@
   <meta property="og:url" content="{{ blog.url }}" />
   <meta itemprop="name" content="Lambdapad">
   <meta itemprop="description" content="{{ blog.description }}">
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="{{ blog.title }}" />
+  <meta name="twitter:card" content="{% if post.image %}summary_large_image{% else %}summary{% endif %}" />
+  <meta name="twitter:title" content="{% if post.title %}{{ post.title }} - {{ blog.title }}{% else %}{{ blog.title }}{% endif %}" />
   <meta name="twitter:description" content="{{ blog.description }}" />
+  {% if post.image %}
+  <meta property="og:image" content="{{ site_url }}{{ post.image }}" />
+  <meta name="twitter:image" content="{{ site_url }}{{ post.image }}" />
+  {% endif %}
   <link rel="alternate" type="application/rss+xml" title="{{ blog.title }} Blog RSS" href="/blog/rss.xml" />
   <link href="/css/app.css" rel="stylesheet">
 </head>

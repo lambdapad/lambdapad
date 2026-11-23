@@ -22,6 +22,11 @@
                             <span>By {{ post._author.name }}</span>
                             {% endif %}
                         </div>
+                        {% if post.image %}
+                        <div class="pt-4">
+                            <img src="{{ post.image }}" alt="{{ post.title }}" class="aspect-video w-full rounded-xl border border-slate-200 object-cover dark:border-slate-800" />
+                        </div>
+                        {% endif %}
                     </header>
                     {{ post.content | safe }}
                 </article>

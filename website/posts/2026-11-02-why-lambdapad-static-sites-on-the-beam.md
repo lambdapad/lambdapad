@@ -3,6 +3,7 @@ date: 2026-11-02
 title: Why Lambdapad: Static Sites on the BEAM
 author: manuel
 type: Architecture
+image: /images/blog/why-lambdapad-static-sites-on-the-beam.jpg
 
 Most static site generators ask you to choose between rigid conventions and sprawling plugin ecosystems. Lambdapad takes a different approach: a declarative configuration DSL running on the BEAM, paired with ErlyDTL templates and a single standalone CLI binary.
 

@@ -8,6 +8,7 @@ blog do
       transform: fn config ->
         config
         |> Map.put("site_root", "/")
+        |> Map.put("site_url", String.trim_trailing(config["blog"]["url"] || "", "/"))
         |> Map.put("current_year", Date.utc_today().year)
       end
     )

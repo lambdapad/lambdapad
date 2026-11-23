@@ -3,6 +3,7 @@ date: 2026-11-23
 title: Publishing a Lambdapad Site on GitHub Pages
 author: manuel
 type: Tutorial
+image: /images/blog/publishing-lambdapad-on-github-pages.jpg
 
 Once your Lambdapad site is building locally, deploying it to **GitHub Pages** takes just one GitHub Actions workflow. You do not need to commit generated HTML into a `gh-pages` branch—GitHub Actions builds `site/` on every push and publishes it directly.
 
