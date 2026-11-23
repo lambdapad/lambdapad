@@ -39,6 +39,20 @@ Or if you are going to use the Erlang way:
 lpad www/myblog/index.erl
 ```
 
+### Creating Posts & Previewing
+
+You can scaffold a new project, create a post interactively, build, and preview locally:
+
+```
+lpad new my-site
+cd my-site
+lpad new-post   # launches the interactive TUI wizard (requires Erlang/OTP 28+)
+lpad            # builds the site
+lpad http       # serves locally at http://localhost:8080/
+```
+
+CLI flags (`lpad new-post my-slug -d 2026-11-23 -b title="Hello"`) remain supported for non-interactive usage and older OTP releases.
+
 ## Documentation
 
 For further information you can go to the [lambdapad website](https://lambdapad.com)
