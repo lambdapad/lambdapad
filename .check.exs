@@ -35,6 +35,6 @@
     ## custom new tools may be added (Mix tasks or arbitrary commands)
     # {:my_task, "mix my_task", env: %{"MIX_ENV" => "prod"}},
     # {:my_tool, ["my_tool", "arg with spaces"]}
-    {:prisma, "mix prisma --mode discrepancy", env: %{"MIX_ENV" => "test"}}
+    {:prisma, "mix prisma", env: %{"MIX_ENV" => "test"}}
   ]
 ]

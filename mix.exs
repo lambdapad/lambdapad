@@ -11,6 +11,7 @@ defmodule Lambdapad.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       escript: escript(),
+      prisma: [mode: :discrepancy],
       homepage_url: "https://lambdapad.com"
     ]
   end
@@ -18,7 +19,8 @@ defmodule Lambdapad.MixProject do
   def cli do
     [
       preferred_envs: [
-        check: :test
+        check: :test,
+        prisma: :test
       ]
     ]
   end
