@@ -249,3 +249,32 @@ Enum.each(posts, fn post_file ->
 
   IO.puts("Generated OG & X cards for #{id}: #{og_png_path} (#{:erlang.iolist_size(og_png)} bytes), #{x_png_path} (#{:erlang.iolist_size(x_png)} bytes)")
 end)
+
+static_cards = [
+  %{
+    "id" => "blog",
+    "title" => "Lambdapad Blog: Releases, Architecture & Guides",
+    "type" => "Updates & Articles",
+    "date" => "lambdapad.com/blog"
+  },
+  %{
+    "id" => "default",
+    "title" => "Lambdapad: Static Website Generator on the BEAM",
+    "type" => "Elixir & Erlang",
+    "date" => "lambdapad.com"
+  }
+]
+
+Enum.each(static_cards, fn card ->
+  id = card["id"]
+
+  og_svg = Lambdapad.OgImage.generate_og(card, images_dir)
+  {:ok, og_png} = Resvg.svg_string_to_png_buffer(og_svg, resvg_opts)
+  File.write!(Path.join(og_dir, "#{id}.png"), og_png)
+
+  x_svg = Lambdapad.OgImage.generate_x(card, images_dir)
+  {:ok, x_png} = Resvg.svg_string_to_png_buffer(x_svg, resvg_opts)
+  File.write!(Path.join(x_dir, "#{id}.png"), x_png)
+
+  IO.puts("Generated OG & X cards for #{id}")
+end)
