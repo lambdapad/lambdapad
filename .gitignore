@@ -41,3 +41,6 @@ samples/*/site
 # under this repo generates its assets from the repo root.
 /esbuild-darwin-x64*
 /tailwind-macos-x64*
+.elixir_ls/
+website/esbuild-*
+website/tailwind-*
