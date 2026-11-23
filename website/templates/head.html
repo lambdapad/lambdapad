@@ -14,16 +14,16 @@
   <link rel="icon" type="image/png" href="/favicons/android-96x96.png" sizes="96x96">
   <link rel="icon" type="image/png" href="/favicons/android-144x144.png" sizes="144x144">
   <link rel="icon" type="image/png" href="/favicons/android-192x192.png" sizes="192x192">
-  <title>{{ blog.title }}</title>
-  <meta property="og:title" content="{{ blog.title }}" />
-  <meta property="og:description" content="{{ blog.description }}" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="{{ blog.url }}" />
-  <meta itemprop="name" content="Lambdapad">
-  <meta itemprop="description" content="{{ blog.description }}">
+  <title>{% if post.title %}{{ post.title }} - {{ blog.title }}{% elif page.title %}{{ page.title }} - {{ blog.title }}{% else %}{{ blog.title }}{% endif %}</title>
+  <meta property="og:title" content="{% if post.title %}{{ post.title }}{% elif page.title %}{{ page.title }}{% else %}{{ blog.title }}{% endif %}" />
+  <meta property="og:description" content="{% if post.excerpt %}{{ post.excerpt | escape }}{% else %}{{ blog.description }}{% endif %}" />
+  <meta property="og:type" content="{% if post.title %}article{% else %}website{% endif %}" />
+  <meta property="og:url" content="{% if post.id %}{{ site_url }}/blog/{{ post.id }}/{% else %}{{ blog.url }}{% endif %}" />
+  <meta itemprop="name" content="{% if post.title %}{{ post.title }}{% else %}Lambdapad{% endif %}">
+  <meta itemprop="description" content="{% if post.excerpt %}{{ post.excerpt | escape }}{% else %}{{ blog.description }}{% endif %}">
   <meta name="twitter:card" content="{% if post.image %}summary_large_image{% else %}summary{% endif %}" />
-  <meta name="twitter:title" content="{% if post.title %}{{ post.title }} - {{ blog.title }}{% else %}{{ blog.title }}{% endif %}" />
-  <meta name="twitter:description" content="{{ blog.description }}" />
+  <meta name="twitter:title" content="{% if post.title %}{{ post.title }} - {{ blog.title }}{% elif page.title %}{{ page.title }} - {{ blog.title }}{% else %}{{ blog.title }}{% endif %}" />
+  <meta name="twitter:description" content="{% if post.excerpt %}{{ post.excerpt | escape }}{% else %}{{ blog.description }}{% endif %}" />
   {% if post.image %}
   <meta property="og:image" content="{{ site_url }}{{ post.image }}" />
   <meta name="twitter:image" content="{{ site_url }}{{ post.image }}" />

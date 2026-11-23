@@ -22,7 +22,7 @@ blog do
     set(from: :posts)
     set(uri: "/blog/{{ post.id }}")
     set(var_name: "post")
-    set(excerpt: false)
+    set(excerpt: true)
     set(headers: true)
     set(template: "post.html")
     set(transform_on_item: ["date", "author"])
