@@ -35,21 +35,25 @@ defmodule Lambdapad.Generate.Assets do
       dst_path = Path.join([workdir, data[:to] || ""])
 
       Enum.each(Path.wildcard(src_path), fn file ->
-        base_file = String.replace_prefix(file, base_src_path, "")
-        print_file = get_print_file(base_file, file)
-
-        case process_file(data, file, dst_path, base_file) do
-          :ok ->
-            Cli.print_level3(print_file)
-
-          {:error, reason} ->
-            Cli.print_error("Asset processing failed for #{print_file}: #{format_error(reason)}")
-            Cli.halt(1)
-        end
+        process_asset_file(data, file, base_src_path, dst_path)
       end)
 
       Cli.print_level2_ok()
     end)
+  end
+
+  defp process_asset_file(data, file, base_src_path, dst_path) do
+    base_file = String.replace_prefix(file, base_src_path, "")
+    print_file = get_print_file(base_file, file)
+
+    case process_file(data, file, dst_path, base_file) do
+      :ok ->
+        Cli.print_level3(print_file)
+
+      {:error, reason} ->
+        Cli.print_error("Asset processing failed for #{print_file}: #{format_error(reason)}")
+        Cli.halt(1)
+    end
   end
 
   defp get_print_file("", file), do: Path.basename(file)
