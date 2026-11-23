@@ -15,6 +15,14 @@ defmodule Lambdapad.MixProject do
     ]
   end
 
+  def cli do
+    [
+      preferred_envs: [
+        check: :test
+      ]
+    ]
+  end
+
   defp escript do
     if Mix.env() == :dev and is_nil(System.get_env("IGNORE_BUILD_WARNING")) do
       IO.warn(
