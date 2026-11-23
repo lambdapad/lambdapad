@@ -11,7 +11,6 @@ defmodule Lambdapad.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       escript: escript(),
-      prisma: [mode: :discrepancy],
       homepage_url: "https://lambdapad.com"
     ]
   end
@@ -74,7 +73,7 @@ defmodule Lambdapad.MixProject do
       # generating the production script avoiding including these.
       {:ex_doc, "~> 0.24", runtime: false, only: [:dev, :test]},
       {:ex_check, "~> 0.14", runtime: false, only: [:dev, :test]},
-      {:prisma, "~> 0.2", runtime: false, only: [:dev, :test]},
+      {:prisma, github: "altenwald/prisma", runtime: false, only: [:dev, :test]},
       {:doctor, "~> 0.19", runtime: false, only: [:dev, :test]},
       {:credo, "~> 1.6", runtime: false, only: [:dev, :test]}
     ]

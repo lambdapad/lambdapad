@@ -53,9 +53,9 @@ defmodule Lambdapad.CliTest do
     assert Cli.get_infile_options()[:infile][:required] == false
   end
 
-  test "get_verbosity_options/0 declares -v with a default level" do
+  test "get_verbosity_options/0 declares -v with multiple flag" do
     assert Cli.get_verbosity_options()[:verbosity][:short] == "-v"
-    assert Cli.get_verbosity_options()[:verbosity][:default] == 1
+    assert Cli.get_verbosity_options()[:verbosity][:multiple] == true
   end
 
   test "loglevel_equal_or_greater_than?/1 compares against the configured loglevel" do

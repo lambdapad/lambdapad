@@ -15,8 +15,6 @@ defmodule Lambdapad.Cli do
   alias Lambdapad.Cli.Command
   alias Lambdapad.Config
 
-  @default_verbosity 1
-
   @doc """
   Stops the CLI with the given exit code. Under `MIX_ENV=test` this
   throws `{:halt, code}` instead of really halting the VM, so error
@@ -339,8 +337,7 @@ defmodule Lambdapad.Cli do
       verbosity: [
         short: "-v",
         help: "Verbosity level.",
-        multiple: true,
-        default: @default_verbosity
+        multiple: true
       ]
     ]
   end
