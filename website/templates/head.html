@@ -21,12 +21,20 @@
   <meta property="og:url" content="{% if post.id %}{{ site_url }}/blog/{{ post.id }}/{% else %}{{ blog.url }}{% endif %}" />
   <meta itemprop="name" content="{% if post.title %}{{ post.title }}{% else %}Lambdapad{% endif %}">
   <meta itemprop="description" content="{% if post.excerpt %}{{ post.excerpt | escape }}{% else %}{{ blog.description }}{% endif %}">
-  <meta name="twitter:card" content="{% if post.image %}summary_large_image{% else %}summary{% endif %}" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="{% if post.title %}{{ post.title }} - {{ blog.title }}{% elif page.title %}{{ page.title }} - {{ blog.title }}{% else %}{{ blog.title }}{% endif %}" />
   <meta name="twitter:description" content="{% if post.excerpt %}{{ post.excerpt | escape }}{% else %}{{ blog.description }}{% endif %}" />
-  {% if post.image %}
-  <meta property="og:image" content="{{ site_url }}{{ post.image }}" />
-  <meta name="twitter:image" content="{{ site_url }}{{ post.image }}" />
+  {% if post.id %}
+  <meta property="og:image" content="{{ site_url }}/images/og/{{ post.id }}.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="{{ post.title }}" />
+  <meta name="twitter:image" content="{{ site_url }}/images/x/{{ post.id }}.png" />
+  <meta name="twitter:image:alt" content="{{ post.title }}" />
+  {% else %}
+  <meta property="og:image" content="{{ site_url }}/images/notepad.png" />
+  <meta name="twitter:image" content="{{ site_url }}/images/notepad.png" />
   {% endif %}
   <link rel="alternate" type="application/rss+xml" title="{{ blog.title }} Blog RSS" href="/blog/rss.xml" />
   <link href="/css/app.css" rel="stylesheet">
